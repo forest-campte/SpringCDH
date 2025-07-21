@@ -26,4 +26,5 @@ public interface AdminRepo extends JpaRepository<AdminEntity, Long> {
                                          @Param("type") String type);
 
 
+
 }

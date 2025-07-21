@@ -13,7 +13,7 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 public class FilterConfig {
 
 
-    // 이 설정으로 /api/customers/me 요청 시, Authorization: Bearer <token> 헤더가 필요
+    // 이 설정으로 /customers/me 요청 시, Authorization: Bearer <token> 헤더가 필요
     @Bean
     public FilterRegistrationBean<Filter> jwtFilter(JwtAuthFilter jwtAuthFilter) {
         FilterRegistrationBean<Filter> registrationBean = new FilterRegistrationBean<>();

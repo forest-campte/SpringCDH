@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/admin")
+@RequestMapping("/api/admins")
 //요청 처리 + 응답 반환
 //RequestDTO를 받아서 Service 호출 → ResponseDTO로 응답
 public class AuthController {

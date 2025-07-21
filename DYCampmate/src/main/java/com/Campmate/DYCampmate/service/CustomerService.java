@@ -1,17 +1,15 @@
 package com.Campmate.DYCampmate.service;
 
 import com.Campmate.DYCampmate.JwtUtil;
-import com.Campmate.DYCampmate.dto.CustomerLoginRequestDTO;
-import com.Campmate.DYCampmate.dto.CustomerLoginResponseDTO;
+import com.Campmate.DYCampmate.dto.*;
 import com.Campmate.DYCampmate.entity.CustomerEntity;
-import com.Campmate.DYCampmate.dto.CustomerRequestDTO;
-import com.Campmate.DYCampmate.dto.CustomerResponseDTO;
 import com.Campmate.DYCampmate.repository.CustomerRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -24,7 +22,7 @@ public class CustomerService {
     private final JwtUtil jwtUtil;
 
 
-    //회원가입
+    //CustomerController
     public Long registerCustomer(CustomerRequestDTO dto) {
         if (customerRepository.existsByCustomerId(dto.getCustomerId())) {
             throw new IllegalArgumentException("이미 존재하는 고객 ID입니다.");
@@ -44,7 +42,7 @@ public class CustomerService {
         return customerRepository.save(customer).getId();
     }
 
-    //로그인
+    //CustomerController
     public CustomerLoginResponseDTO login(CustomerLoginRequestDTO dto) {
         CustomerEntity customer = customerRepository.findByCustomerId(dto.getCustomerId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 고객 ID입니다."));
@@ -61,6 +59,7 @@ public class CustomerService {
                 .build();
     }
 
+    //CustomerController
     public CustomerResponseDTO getCustomerById(Long id) {
         CustomerEntity customer = customerRepository.findByCustomerId(String.valueOf(id))
                 .orElseThrow(() -> new IllegalArgumentException("해당 고객을 찾을 수 없습니다."));
@@ -76,6 +75,15 @@ public class CustomerService {
                 .build();
     }
 
+    public CustomerFindIdResponseDTO findCustomerId(String email, String nickname) {
+        Optional<CustomerEntity> customerOpt = customerRepository.findByEmailAndNickname(email, nickname);
+
+        return customerOpt.
+                map(customer -> new CustomerFindIdResponseDTO
+                    (true, customer.getCustomerId(), "성공"))
+                .orElseGet(() -> new CustomerFindIdResponseDTO
+                    (false, null, "회원 정보 없음"));
+    }
 
 
 }

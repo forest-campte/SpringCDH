@@ -18,7 +18,7 @@ public class AdminDTO {
     private String campingStyle;
     private String campingBackground;
     private String campingType;
-    private LocalDateTime create_dt;
+    private LocalDateTime createDt;
 
     public static AdminDTO fromEntity(AdminEntity admin) {
         return AdminDTO.builder()

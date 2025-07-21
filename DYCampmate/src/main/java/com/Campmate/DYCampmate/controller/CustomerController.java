@@ -63,11 +63,16 @@ public class CustomerController {
         return ResponseEntity.ok(dto);
     }
 
+
+    //맞춤형 캠핑장 리스트 조회
     @GetMapping("admins/{customerId}")
     public ResponseEntity<List<AdminDTO>> recommendAdmins(@PathVariable Long customerId) {
         List<AdminDTO> result = adminService.recommendAdmins(customerId);
         return ResponseEntity.ok(result);
     }
 
-
+    @PostMapping("/findId")
+    public ResponseEntity<CustomerFindIdResponseDTO> findId(@RequestBody CustomerFindIdRequestDTO dto) {
+        return ResponseEntity.ok(customerService.findCustomerId(dto.getEmail(), dto.getNickname()));
+    }
 }
