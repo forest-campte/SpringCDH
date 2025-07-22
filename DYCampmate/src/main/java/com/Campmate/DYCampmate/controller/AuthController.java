@@ -5,6 +5,8 @@ import com.Campmate.DYCampmate.entity.AdminEntity;
 import com.Campmate.DYCampmate.service.AdminService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -16,16 +18,16 @@ import java.util.Map;
 public class AuthController {
 
     private final AdminService adminService;
-
     public AuthController(AdminService adminService) {
         this.adminService = adminService;
     }
+    public PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequestDTO loginDto) {
-        AdminEntity admin = adminService.findByEmail(loginDto.getEmail());
-
-        if (admin != null && admin.getPassword().equals(loginDto.getPassword())) {
+        AdminEntity admin = adminService.findByEmail(loginDto.getEmail().trim());
+        System.out.println("검색된 관리자: " + admin);
+        if (admin != null && passwordEncoder.matches(loginDto.getPassword(), admin.getPassword())){
             admin.setPassword(null); // 비밀번호는 프론트로 전달 X
             return ResponseEntity.ok(admin);
         } else {
