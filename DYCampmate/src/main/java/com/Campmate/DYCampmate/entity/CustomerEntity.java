@@ -45,4 +45,7 @@ public class CustomerEntity {
 
     @Column(name = "create_dt")
     private LocalDateTime createdDate;
+
+    @Column(nullable = false, length = 20)
+    private String provider; // "NORMAL", "KAKAO", "GOOGLE"
 }
