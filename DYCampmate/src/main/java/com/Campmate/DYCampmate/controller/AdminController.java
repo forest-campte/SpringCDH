@@ -28,10 +28,5 @@ public class AdminController {
 //    }@RequiredArgsConstructor Annotation 으로 대체
 
 
-//    @GetMapping("/{email}")
-//    public ResponseEntity<AdminEntity> getByEmail(@PathVariable String email) {
-//        return adminService.findByEmail(email)
-//                .map(ResponseEntity::ok)
-//                .orElse(ResponseEntity.notFound().build());
-//    }
+
 }
