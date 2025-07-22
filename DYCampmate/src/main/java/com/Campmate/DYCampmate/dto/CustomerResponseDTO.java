@@ -16,6 +16,7 @@ public class CustomerResponseDTO {
     private String customersStyle;
     private String customersBackground;
     private String customersType;
+    private String provider;
 
 
 }

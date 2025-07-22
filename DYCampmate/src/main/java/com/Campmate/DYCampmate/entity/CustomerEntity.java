@@ -47,5 +47,5 @@ public class CustomerEntity {
     private LocalDateTime createdDate;
 
     @Column(nullable = false, length = 20)
-    private String provider; // "NORMAL", "KAKAO", "GOOGLE"
+    private String provider = "NORMAL"; // "NORMAL", "KAKAO", "GOOGLE"
 }

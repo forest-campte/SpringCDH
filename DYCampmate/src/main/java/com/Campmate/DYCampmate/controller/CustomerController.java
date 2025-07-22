@@ -58,6 +58,7 @@ public class CustomerController {
                 .customersStyle(customer.getCustomersStyle())
                 .customersBackground(customer.getCustomersBackground())
                 .customersType(customer.getCustomersType())
+                .provider(customer.getProvider())
                 .build();
 
         return ResponseEntity.ok(dto);

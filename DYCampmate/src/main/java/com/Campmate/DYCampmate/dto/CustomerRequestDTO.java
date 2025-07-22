@@ -20,5 +20,6 @@ public class CustomerRequestDTO {
     private String customersBackground;
     private String customersType;
     private LocalDateTime createDt;
+    private String provider;
 
 }

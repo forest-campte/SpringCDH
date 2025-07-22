@@ -28,6 +28,8 @@ public class CustomerService {
             throw new IllegalArgumentException("이미 존재하는 고객 ID입니다.");
         }
 
+        String provider = dto.getProvider() == null ? "NORMAL" : dto.getProvider();
+
         CustomerEntity customer = CustomerEntity.builder()
                 .customerId(dto.getCustomerId())
                 .password(passwordEncoder.encode(dto.getPassword())) // 암호화
@@ -36,6 +38,7 @@ public class CustomerService {
                 .customersStyle(dto.getCustomersStyle())
                 .customersBackground(dto.getCustomersBackground())
                 .customersType(dto.getCustomersType())
+                .provider(provider)
                 .createdDate(LocalDateTime.now())
                 .build();
 
