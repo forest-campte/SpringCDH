@@ -1,5 +1,6 @@
 package com.Campmate.DYCampmate.dto;
 
+import com.Campmate.DYCampmate.entity.AdminEntity;
 import lombok.Data;
 import lombok.Getter;
 
@@ -21,5 +22,15 @@ public class AdminResponseDTO {
         this.password = password;
         this.name = name;
 
+    }
+
+
+    public AdminResponseDTO(AdminEntity admin) {
+        this.id = admin.getId();
+        this.email = admin.getEmail();
+        this.name = admin.getName();
+        this.campingBackground = admin.getCampingBackground();
+        this.campingStyle = admin.getCampingStyle();
+        this.campingType = admin.getCampingType();
     }
 }
