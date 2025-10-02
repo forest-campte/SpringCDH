@@ -28,7 +28,7 @@ public class CustomerEntity {
     @Column(name = "customers_email", nullable = false, length = 100)
     private String email;
 
-    @Column(name = "customers_nickname", length = 100)
+    @Column(name = "customers_name", length = 100)
     private String nickname;
 
     //캠핑 스타일

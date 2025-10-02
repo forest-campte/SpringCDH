@@ -16,7 +16,7 @@ public class ZoneDTO {
     private String type;
     private String defaultSize;
     private String floor;
-    private String parking;
+    private Boolean parking;
     private Boolean isActive;
 
     public ZoneDTO(ZoneEntity entity) {

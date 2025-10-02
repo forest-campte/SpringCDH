@@ -24,6 +24,11 @@ public class ReservationEntity {
     @JoinColumn(name = "camping_zone_id", referencedColumnName = "id")
     private ZoneEntity campingZone;
 
+    // 고객 외래키
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customers_id", referencedColumnName = "id")
+    private CustomerEntity customer;
+
     //실제 DB 컬럼명과 다를경우 name 속성 필수
     @Column(name = "customer_name", length = 255)
     private String customerName;

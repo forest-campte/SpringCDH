@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "camping_zones")
+@Table(name = "camping_zone")
 public class ZoneEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,7 +20,7 @@ public class ZoneEntity {
     // 관리자 (admins 테이블 참조)
     //외래키 패치지연 적용, 참고 컬럼 이름 명시
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "admims_id", referencedColumnName = "id")
+    @JoinColumn(name = "admins_id", referencedColumnName = "id")
     private AdminEntity admin;
 
     @Column(length = 255)
@@ -34,7 +34,7 @@ public class ZoneEntity {
     private Integer capacity;
 
     // 1박당 가격
-    @Column(name = "price_per_night")
+    @Column(name = "price")
     private Integer pricePerNight;
 
     @Column(length = 255)
@@ -47,8 +47,9 @@ public class ZoneEntity {
     @Column(length = 255)
     private String floor;
 
-    @Column(length = 255)
-    private String parking;
+    // BIT(1) → Boolean
+    @Column(name="parking")
+    private Boolean parking;
 
     // BIT(1) → Boolean
     @Column(name = "is_active")
