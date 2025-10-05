@@ -45,6 +45,8 @@ public class AuthController {
 
         AdminEntity admin = authService.authenticate(request);
 
+        String token = jwtUtil.createToken(String.valueOf(admin.getId()),admin.getEmail());
+
         AdminResponseDTO user = new AdminResponseDTO(admin);
         List<ReservationDTO> reservations = reservationService.getReservation(admin);
         List<ZoneDTO> zones = zoneService.getZonesForAdmin(admin);
@@ -53,6 +55,7 @@ public class AuthController {
         response.put("user", user);
         response.put("reservations", reservations);
         response.put("zones", zones);
+        response.put("token", token);
 
         return ResponseEntity.ok(response);
     }

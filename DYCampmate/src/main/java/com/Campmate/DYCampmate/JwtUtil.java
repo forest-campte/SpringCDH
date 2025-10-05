@@ -27,9 +27,10 @@ public class JwtUtil {
     }
 
     //socialLogin
-    public String createToken(String customerId, String email) {
+    //AdminLogin
+    public String createToken(String Id, String email) {
         return Jwts.builder()
-                .setSubject(customerId)
+                .setSubject(Id)
                 .claim("email", email)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expiration)) // 3시간
