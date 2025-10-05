@@ -17,7 +17,7 @@ public class ZoneDTO {
     private String defaultSize;
     private String floor;
     private Boolean parking;
-    private Boolean isActive;
+    private Boolean active;
 
     public ZoneDTO(ZoneEntity entity) {
         this.id = entity.getId();
@@ -28,8 +28,8 @@ public class ZoneDTO {
         this.type = entity.getType();
         this.defaultSize = entity.getDefaultSize();
         this.floor = entity.getFloor();
-        this.parking = entity.getParking();
-        this.isActive = entity.getIsActive();
+        this.parking = entity.isParking();
+        this.active = entity.isActive();
     }
 
 

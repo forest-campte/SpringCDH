@@ -1,5 +1,7 @@
 package com.Campmate.DYCampmate.controller;
 
+import com.Campmate.DYCampmate.dto.CampingZoneRequest;
+import com.Campmate.DYCampmate.dto.CampingZoneResponse;
 import com.Campmate.DYCampmate.dto.ZoneDTO;
 import com.Campmate.DYCampmate.entity.AdminEntity;
 import com.Campmate.DYCampmate.service.ZoneService;
@@ -25,13 +27,20 @@ public class ZoneController {
     }
 
     // 캠핑존 등록
-    @PostMapping("/admin/{adminId}")
-    public ResponseEntity<ZoneDTO> createZone(
-            @PathVariable Long adminId,
-            @RequestBody ZoneDTO dto) {
-        AdminEntity admin = AdminEntity.builder().id(adminId).build();
-        ZoneDTO created = campingZoneService.createZone(admin, dto);
-        return ResponseEntity.ok(created);
+    @PostMapping
+    public ResponseEntity<CampingZoneResponse> createZone(@RequestBody CampingZoneRequest request) {
+        CampingZoneResponse createdZone = campingZoneService.createZone(request);
+        return ResponseEntity.ok(createdZone);
+    }
+
+    // 캠핑존 수정 (PUT)
+    @PutMapping("/{id}")
+    public ResponseEntity<CampingZoneResponse> updateZone(
+            @PathVariable Long id,
+            @RequestBody CampingZoneRequest request
+    ) {
+        CampingZoneResponse updatedZone = campingZoneService.updateZone(id, request);
+        return ResponseEntity.ok(updatedZone);
     }
 
     // 캠핑존 삭제

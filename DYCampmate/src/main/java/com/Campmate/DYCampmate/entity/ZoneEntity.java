@@ -45,10 +45,10 @@ public class ZoneEntity {
 
     // BIT(1) → Boolean 자동 매핑
     @Column(name = "parking", nullable = false)
-    private Boolean parking = false; // 주차 가능 여부
+    private boolean parking = false; // 주차 가능 여부
 
     @Column(name = "is_active", nullable = false)
-    private Boolean isActive = false; // 예약 가능 여부
+    private boolean active = false; // 예약 가능 여부
 
     @Column(name = "created_dt")
     private LocalDateTime createdDt;

@@ -28,5 +28,15 @@ public class ReservationService {
         return reservationMapper.toDtoList(reservationRepo.findByCampingZone_Admin(admin));
     }
 
+    // 특정 상태의 예약 조회
+    public List<ReservationDTO> getReservationsByStatus(AdminEntity admin, ReservationEntity.ReservationStatus status) {
+        return reservationMapper
+                .toDtoList(reservationRepo.findByCampingZone_AdminAndStatus(admin, status));
+    }
 
+    // 여러 상태의 예약 조회 (R, C, E 등)
+    public List<ReservationDTO> getReservationsByStatuses(AdminEntity admin, List<ReservationEntity.ReservationStatus> statuses) {
+        return reservationMapper
+                .toDtoList(reservationRepo.findByCampingZone_AdminAndStatusIn(admin, statuses));
+    }
 }
