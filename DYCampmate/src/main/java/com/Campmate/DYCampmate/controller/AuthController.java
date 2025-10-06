@@ -7,10 +7,9 @@ import com.Campmate.DYCampmate.entity.CustomerEntity;
 import com.Campmate.DYCampmate.repository.CustomerRepo;
 import com.Campmate.DYCampmate.service.AdminService;
 import com.Campmate.DYCampmate.service.AuthService;
+import com.Campmate.DYCampmate.service.CampingZoneService;
 import com.Campmate.DYCampmate.service.ReservationService;
-import com.Campmate.DYCampmate.service.ZoneService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,10 +30,10 @@ public class AuthController {
 
     private final AdminService adminService;
     private final AuthService authService;
-    private final ZoneService zoneService;
     private final ReservationService reservationService;
     private final CustomerRepo customerRepository;
     private final JwtUtil jwtUtil;
+    private final CampingZoneService campingZoneService;
 
     public PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
@@ -49,7 +48,7 @@ public class AuthController {
 
         AdminResponseDTO user = new AdminResponseDTO(admin);
         List<ReservationDTO> reservations = reservationService.getReservation(admin);
-        List<ZoneDTO> zones = zoneService.getZonesForAdmin(admin);
+        List<CampingZoneDto> zones = campingZoneService.getZonesForAdmin(admin);
 
         Map<String, Object> response = new HashMap<>();
         response.put("user", user);

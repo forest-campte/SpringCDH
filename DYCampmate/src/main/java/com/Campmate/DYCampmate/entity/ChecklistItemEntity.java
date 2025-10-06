@@ -28,6 +28,7 @@ public class ChecklistItemEntity {
     @Column(name = "item_name", length = 255)
     private String itemName; // 아이템 이름
 
+    @Builder.Default
     @Column(name = "is_checked", nullable = false)
     private Boolean isChecked = false; // 체크 여부
 }

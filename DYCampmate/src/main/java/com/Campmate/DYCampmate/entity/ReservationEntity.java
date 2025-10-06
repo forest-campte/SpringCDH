@@ -22,7 +22,7 @@ public class ReservationEntity {
     //외래키 패치지연 적용, 참고 컬럼 이름 명시
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "camping_zone_id", referencedColumnName = "id")
-    private ZoneEntity campingZone;
+    private CampingZone campingZone;
 
     // 고객 외래키
     @ManyToOne(fetch = FetchType.LAZY)

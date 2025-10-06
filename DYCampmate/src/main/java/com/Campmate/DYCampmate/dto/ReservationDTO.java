@@ -15,7 +15,7 @@ public class ReservationDTO {
     private String checkIn;
     private String checkOut;
     private String status;
-    private String createDt;
+    private String createdDt;
 
     private String zoneName;
 
