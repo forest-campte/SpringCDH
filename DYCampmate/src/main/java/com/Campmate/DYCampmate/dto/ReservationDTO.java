@@ -3,7 +3,11 @@ package com.Campmate.DYCampmate.dto;
 import com.Campmate.DYCampmate.entity.ReservationEntity;
 import lombok.*;
 
-@Getter @Setter
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -12,12 +16,23 @@ public class ReservationDTO {
     private Long id;
     private String customerName;
     private String customerPhone;
-    private String checkIn;
-    private String checkOut;
+    private LocalDate checkIn;
+    private LocalDate checkOut;
     private String status;
-    private String createdDt;
+    private LocalDateTime createDt;
 
     private String zoneName;
 
-
+    // 엔티티를 DTO로 변환하는 정적 팩토리 메서드
+    public static ReservationDTO from(ReservationEntity entity) {
+        return ReservationDTO.builder()
+                .id(entity.getId())
+                .customerName(entity.getCustomerName())
+                .customerPhone(entity.getCustomerPhone())
+                .checkIn(entity.getCheckIn())
+                .checkOut(entity.getCheckOut())
+                .status(String.valueOf(entity.getStatus()))
+                .createDt(entity.getCreateDt())
+                .build();
+    }
 }

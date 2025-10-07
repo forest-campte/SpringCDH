@@ -8,7 +8,7 @@ public record CampingZoneUpdateRequestDto(
         String type,
         String defaultSize,
         String floor,
-        boolean parking,
-        boolean isActive
+        Integer parking,
+        Integer isActive
 ) {
 }

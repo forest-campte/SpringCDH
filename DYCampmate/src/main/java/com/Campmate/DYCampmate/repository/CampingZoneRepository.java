@@ -10,9 +10,12 @@ import java.util.List;
 @Repository
 public interface CampingZoneRepository extends JpaRepository<CampingZone,Long> {
 
-    // 특정 관리자 ID가 소유한 캠핑존 목록을 찾기 위한 메서드 (인증 로직에 따라 필요할 수 있음)
-    List<CampingZone> findAllByAdmin_Id(Long adminsId);
-
     List<CampingZone> findByAdmin(AdminEntity admin);
 
+    /**
+     * 특정 관리자 ID에 속한 모든 캠핑존을 조회
+     * @param adminId 관리자(Admin)의 ID
+     * @return 해당 관리자의 캠핑존 목록
+     */
+    List<CampingZone> findAllByAdmin_Id(Long adminId);
 }

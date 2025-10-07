@@ -8,7 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.User;
 import java.util.List;
 
 @RestController
@@ -19,11 +20,19 @@ public class CampingZoneController {
 
     private final CampingZoneService campingZoneService;
 
-    // 모든 캠핑존 조회 (GET /api/zones)
-    @GetMapping
+    // 모든 캠핑존 조회 (GET /api/zones/all)
+    @GetMapping("all")
     public ResponseEntity<List<CampingZoneDto>> getAllZones() {
         List<CampingZoneDto> zones = campingZoneService.getAllCampingZones();
         return ResponseEntity.ok(zones);
+    }
+
+    // 로그인한 유저의 모든 캠핑존 조회 (GET /api/zones)
+    @GetMapping
+    public ResponseEntity<List<CampingZoneDto>> getMyZones(@AuthenticationPrincipal User user) {
+        Long adminId = Long.parseLong(user.getUsername());
+
+        return ResponseEntity.ok(campingZoneService.getZonesForAdmin(adminId));
     }
 
     // 새 캠핑존 추가 (POST /api/zones)

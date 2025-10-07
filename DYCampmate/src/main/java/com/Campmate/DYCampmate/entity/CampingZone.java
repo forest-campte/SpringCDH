@@ -17,33 +17,34 @@ public class CampingZone extends BaseTimeEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "admins_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "admins_id", nullable = false)
     private AdminEntity admin;
 
-    @Column(length = 255)
+    @Column(name = "name")
     private String name;
 
-    @Column(length = 255)
+    @Column(name = "description")
     private String description;
 
+    @Column(name = "capacity")
     private Integer capacity;
 
-    @Column(nullable = false)
+    @Column(name = "price", nullable = false)
     private Integer price;
 
-    @Column(length = 255)
+    @Column(name = "type")
     private String type;
 
-    @Column(length = 255)
+    @Column(name = "default_size")
     private String defaultSize;
 
-    @Column(length = 255)
+    @Column(name = "floor")
     private String floor;
 
-    @Column(nullable = false)
+    @Column(name = "parking", nullable = false)
     private boolean parking;
 
-    @Column(nullable = false)
+    @Column(name = "is_active", nullable = false)
     private boolean isActive;
 
     @Builder

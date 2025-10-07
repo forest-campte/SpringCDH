@@ -1,5 +1,6 @@
 package com.Campmate.DYCampmate.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;
@@ -15,8 +16,10 @@ import java.time.LocalDateTime;
 public abstract class BaseTimeEntity {
 
     @CreatedDate
+    @Column(updatable = false, name="created_dt")
     private LocalDateTime createdDt;
 
     @LastModifiedDate
+    @Column(name="updated_dt")
     private LocalDateTime updatedDt;
 }

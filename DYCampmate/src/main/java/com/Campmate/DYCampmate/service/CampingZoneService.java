@@ -28,8 +28,8 @@ public class CampingZoneService {
 
     // 로그인 시
     // 관리자 기준 캠핑존 조회
-    public List<CampingZoneDto> getZonesForAdmin(AdminEntity admin) {
-        return campingZoneRepository.findByAdmin(admin)
+    public List<CampingZoneDto> getZonesForAdmin(Long adminId) {
+        return campingZoneRepository.findAllByAdmin_Id(adminId)
                 .stream()
                 .map(CampingZoneDto::from)
                 .collect(Collectors.toList());
@@ -67,8 +67,8 @@ public class CampingZoneService {
                 requestDto.type(),
                 requestDto.defaultSize(),
                 requestDto.floor(),
-                requestDto.parking(),
-                requestDto.isActive()
+                requestDto.parking() == 1,
+                requestDto.isActive() == 1
         );
         // campingZone은 영속성 컨텍스트에 의해 관리되므로,
         // @Transactional 어노테이션 덕분에 메서드 종료 시 변경 감지(dirty checking)가 일어나 DB에 자동으로 반영됩니다.

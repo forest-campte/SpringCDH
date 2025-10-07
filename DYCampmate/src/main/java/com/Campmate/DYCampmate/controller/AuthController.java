@@ -47,13 +47,14 @@ public class AuthController {
         String token = jwtUtil.createToken(String.valueOf(admin.getId()),admin.getEmail());
 
         AdminResponseDTO user = new AdminResponseDTO(admin);
-        List<ReservationDTO> reservations = reservationService.getReservation(admin);
-        List<CampingZoneDto> zones = campingZoneService.getZonesForAdmin(admin);
+        // 페이지 진입시 조회 API가 이미 있으므로 주석 처리
+//        List<ReservationDTO> reservations = reservationService.getReservationsForAdmin(admin.getId());
+//        List<CampingZoneDto> zones = campingZoneService.getZonesForAdmin(admin.getId());
 
         Map<String, Object> response = new HashMap<>();
         response.put("user", user);
-        response.put("reservations", reservations);
-        response.put("zones", zones);
+//        response.put("reservations", reservations);
+//        response.put("zones", zones);
         response.put("token", token);
 
         return ResponseEntity.ok(response);

@@ -18,6 +18,10 @@ public class ReservationService {
     private final ReservationRepo reservationRepo;
     private final ReservationMapper reservationMapper;
 
+    public List<ReservationDTO> getReservationsForAdmin(Long adminId) {
+        return reservationMapper.toDtoList(reservationRepo.findReservationsByAdminIdWithDetails(adminId));
+    }
+
     public List<ReservationDTO> getAllReservations(){
         return reservationMapper.toDtoList(reservationRepo.findAll());
     }

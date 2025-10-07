@@ -47,7 +47,7 @@ public class ReservationEntity {
     private ReservationStatus status;
 
     @Column(name = "created_dt", nullable = false)
-    private LocalDateTime createdDt;
+    private LocalDateTime createDt;
 
     public enum ReservationStatus {
         R, // 예약됨
