@@ -15,7 +15,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/zones")
-@CrossOrigin(origins = "http://localhost:3000") // 프론트엔드 개발 서버의 주소
+@CrossOrigin(origins = "http://localhost:3000") // 관리자 웹 도메인
 public class CampingZoneController {
 
     private final CampingZoneService campingZoneService;

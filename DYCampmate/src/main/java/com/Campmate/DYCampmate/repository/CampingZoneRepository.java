@@ -18,4 +18,5 @@ public interface CampingZoneRepository extends JpaRepository<CampingZone,Long> {
      * @return 해당 관리자의 캠핑존 목록
      */
     List<CampingZone> findAllByAdmin_Id(Long adminId);
+
 }

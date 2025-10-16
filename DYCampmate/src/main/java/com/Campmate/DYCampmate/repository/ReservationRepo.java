@@ -33,4 +33,6 @@ public interface ReservationRepo extends JpaRepository<ReservationEntity, Long> 
     List.of(ReservationEntity.ReservationStatus.R, ReservationEntity.ReservationStatus.C, ReservationEntity.ReservationStatus.E)
 );
      */
+
+
 }

@@ -48,7 +48,6 @@ public class AdminService {
     }
 
     //맞춤형 캠핑장 리스트 검색
-    //CustomerController /customer/admins/{customerId}
     public List<AdminDTO> recommendAdmins(Long customerId) {
         CustomerEntity customer = customerRepo.findById(customerId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 고객이 없습니다"));

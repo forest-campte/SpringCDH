@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @Builder
 //Data Transfer Object
 // Controller <-> Service 간 전달용 객체
+// registerCustomer
 public class CustomerRequestDTO {
     private String customerId;
     private String password;

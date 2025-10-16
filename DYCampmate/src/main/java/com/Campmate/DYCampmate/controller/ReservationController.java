@@ -23,11 +23,11 @@ public class ReservationController {
     // 로그인한 Admin 아이디를 가져와서 조회함.
     @GetMapping
     public ResponseEntity<List<ReservationDTO>> getMyReservations(@AuthenticationPrincipal User user) {
-        // @AuthenticationPrincipal을 통해 현재 로그인한 사용자의 ID(username 필드에 저장됨)를 가져옵니다.
-        // ID가 Long 타입이므로 변환해줍니다.
+        // @AuthenticationPrincipal을 통해 현재 로그인한 사용자의 ID(username 필드에 저장됨)를 가져옴
+        // ID가 Long 타입이므로 변환
         Long adminId = Long.parseLong(user.getUsername());
 
-        // 서비스 로직을 호출하여 해당 관리자의 예약 목록을 조회합니다.
+        // 해당 관리자의 예약 목록을 조회
         List<ReservationDTO> reservations = reservationService.getReservationsForAdmin(adminId);
 
         return ResponseEntity.ok(reservations);

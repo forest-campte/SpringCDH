@@ -25,7 +25,7 @@ public class CustomerService {
     //CustomerController
     public Long registerCustomer(CustomerRequestDTO dto) {
         if (customerRepository.existsByCustomerId(dto.getCustomerId())) {
-            throw new IllegalArgumentException("이미 존재하는 고객 ID입니다.");
+            throw new IllegalArgumentException("이미 존재하는 아이디 입니다.");
         }
 
         String provider = dto.getProvider() == null ? "NORMAL" : dto.getProvider();
@@ -47,10 +47,13 @@ public class CustomerService {
 
     //CustomerController
     public CustomerLoginResponseDTO login(CustomerLoginRequestDTO dto) {
-        CustomerEntity customer = customerRepository.findByCustomerId(dto.getCustomerId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 고객 ID입니다."));
+        CustomerEntity customer = customerRepository.findByCustomerId(dto.getCustomerEmail())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 아이디 입니다."));
 
-        if (!passwordEncoder.matches(dto.getPassword(), customer.getPassword())) {
+//        if (!passwordEncoder.matches(dto.getCustomerPass(), customer.getPassword())) {
+//            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+//        }
+        if (!dto.getCustomerPass().equals(customer.getPassword())) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
 
