@@ -47,13 +47,13 @@ public class CustomerService {
 
     //CustomerController
     public CustomerLoginResponseDTO login(CustomerLoginRequestDTO dto) {
-        CustomerEntity customer = customerRepository.findByCustomerId(dto.getCustomerEmail())
+        CustomerEntity customer = customerRepository.findByCustomerId(dto.getCustomerId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 아이디 입니다."));
 
-//        if (!passwordEncoder.matches(dto.getCustomerPass(), customer.getPassword())) {
+//        if (!passwordEncoder.matches(dto.getCustomerPassword(), customer.getPassword())) {
 //            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
 //        }
-        if (!dto.getCustomerPass().equals(customer.getPassword())) {
+        if (!dto.getCustomerPassword().equals(customer.getPassword())) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
 
