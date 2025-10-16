@@ -60,8 +60,8 @@ public class CustomerService {
         String token = jwtUtil.generateToken(customer.getCustomerId());
 
         return CustomerLoginResponseDTO.builder()
-                .userName(customer.getNickname() != null ? customer.getNickname() : customer.getCustomerId())
-                .accessToken(token)
+//                .userName(customer.getNickname() != null ? customer.getNickname() : customer.getCustomerId())
+                .token(token)
                 .build();
     }
 
