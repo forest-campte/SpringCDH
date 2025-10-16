@@ -43,4 +43,12 @@ public class ReservationService {
         return reservationMapper
                 .toDtoList(reservationRepo.findByCampingZone_AdminAndStatusIn(admin, statuses));
     }
+
+
+
+    public List<ReservationDTO> getReservationsByAdminAndStatus(Long adminId, List<ReservationEntity.ReservationStatus> status) {
+        return reservationMapper
+                .toDtoList(reservationRepo.findByAdminIdAndStatusInWithCampingZone(adminId, status));
+    }
+
 }

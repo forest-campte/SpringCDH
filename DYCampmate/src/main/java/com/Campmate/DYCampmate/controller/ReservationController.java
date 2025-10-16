@@ -53,27 +53,31 @@ public class ReservationController {
         return ResponseEntity.ok(reservations);
     }
 
-    /**
-     * 특정 관리자(Admin)의 특정 상태(Status)의 예약 조회
-     * 예: /api/reservations/admin/1/status?status=R
 
+
+    /**
+     * 예: GET /api/reservations/admin/1/status?status=R
+     *
+     * @param adminId 관리자 ID (URL 경로에서 추출)
+     * @param status 예약 상태 코드 (요청 파라미터에서 추출: 'R', 'C', 'E')
+     * @return 상태에 따라 필터링된 예약 목록
+     */
     @GetMapping("/admin/{adminId}/status")
     public ResponseEntity<List<ReservationDTO>> getReservationsByAdminAndStatus(
             @PathVariable Long adminId,
-            @RequestParam("status") ReservationEntity.ReservationStatus status) {
+            @RequestParam("status") List<ReservationEntity.ReservationStatus> status) { // String 대신 Enum 타입으로 직접 받도록 변경
 
-        AdminEntity admin = AdminEntity.builder().id(adminId).build();
-        List<ReservationDTO> reservations =
-                reservationService.getReservationsByStatus(admin, status);
+        // 서비스 레이어에 adminId와 status를 직접 전달하여 로직 처리
+        List<ReservationDTO> reservations = reservationService.getReservationsByAdminAndStatus(adminId, status);
 
+        // 조회된 예약 목록을 반환
         return ResponseEntity.ok(reservations);
     }
-     */
 
     /**
      * 특정 관리자(Admin)의 여러 상태(Status 목록)의 예약 조회
      * 예: /api/reservations/admin/1/statuses?statuses=R,C,E
-
+     */
     @GetMapping("/admin/{adminId}/statuses")
     public ResponseEntity<List<ReservationDTO>> getReservationsByAdminAndStatuses(
             @PathVariable Long adminId,
@@ -85,7 +89,7 @@ public class ReservationController {
 
         return ResponseEntity.ok(reservations);
     }
-     */
+
 
 
 }
