@@ -27,7 +27,7 @@ public class CustomerService {
         if (customerRepository.existsByCustomerId(dto.getCustomerId())) {
             throw new IllegalArgumentException("이미 존재하는 아이디 입니다.");
         }
-
+        //Campmate Default 입력
         String provider = dto.getProvider() == null ? "NORMAL" : dto.getProvider();
 
         CustomerEntity customer = CustomerEntity.builder()
@@ -50,12 +50,14 @@ public class CustomerService {
         CustomerEntity customer = customerRepository.findByCustomerId(dto.getCustomerId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 아이디 입니다."));
 
-//        if (!passwordEncoder.matches(dto.getCustomerPassword(), customer.getPassword())) {
-//            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
-//        }
+        if (!passwordEncoder.matches(dto.getCustomerPassword(), customer.getPassword())) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+        /*비밀번호 Encoder 미사용 시
         if (!dto.getCustomerPassword().equals(customer.getPassword())) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
+        */
 
         String token = jwtUtil.generateToken(customer.getCustomerId());
 
