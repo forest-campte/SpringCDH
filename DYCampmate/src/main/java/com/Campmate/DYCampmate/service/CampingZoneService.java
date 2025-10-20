@@ -5,6 +5,7 @@ package com.Campmate.DYCampmate.service;
 import com.Campmate.DYCampmate.dto.CampingZoneDto;
 import com.Campmate.DYCampmate.dto.CampingZoneSaveRequestDto;
 import com.Campmate.DYCampmate.dto.CampingZoneUpdateRequestDto;
+import com.Campmate.DYCampmate.dto.ZoneHomeViewDTO;
 import com.Campmate.DYCampmate.entity.AdminEntity;
 import com.Campmate.DYCampmate.entity.CampingZone;
 import com.Campmate.DYCampmate.repository.AdminRepo;
@@ -35,11 +36,9 @@ public class CampingZoneService {
                 .collect(Collectors.toList());
     }
 
-    // 전체 캠핑존 조회
-    public List<CampingZoneDto> getAllCampingZones() {
-        return campingZoneRepository.findAll().stream()
-                .map(CampingZoneDto::from)
-                .collect(Collectors.toList());
+    // 전체 캠핑존 조회 (홈 화면용)
+    public List<ZoneHomeViewDTO> getAllCampingZones() {
+        return campingZoneRepository.findAllWithAverageRating();
     }
 
     // 캠핑존 생성

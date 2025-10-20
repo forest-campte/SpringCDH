@@ -24,7 +24,4 @@ public class ChecklistCategoryEntity {
     @Column(name = "item_name", length = 100)
     private String itemName;  // 아이템 명
 
-    // checklist_item 과 1:N 관계
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ChecklistItemEntity> checklistItems;
 }

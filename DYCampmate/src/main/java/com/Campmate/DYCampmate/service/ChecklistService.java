@@ -38,11 +38,9 @@ public class ChecklistService {
 
     // 체크리스트 항목 추가
     public ChecklistItemDTO addChecklistItem(CustomerEntity customer,
-                                             ChecklistCategoryEntity category,
                                              String itemName) {
         ChecklistItemEntity entity = ChecklistItemEntity.builder()
                 .customer(customer)
-                .category(category)
                 .itemName(itemName)
                 .isChecked(false)
                 .build();

@@ -4,6 +4,7 @@ import com.Campmate.DYCampmate.dto.ChecklistCategoryDTO;
 import com.Campmate.DYCampmate.dto.ChecklistItemDTO;
 import com.Campmate.DYCampmate.entity.ChecklistCategoryEntity;
 import com.Campmate.DYCampmate.entity.CustomerEntity;
+import com.Campmate.DYCampmate.repository.CustomerRepo;
 import com.Campmate.DYCampmate.service.ChecklistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,11 +18,13 @@ import java.util.List;
 public class ChecklistController {
 
     private final ChecklistService checklistItemService;
+    private final CustomerRepo customerRepository;
 
     // 고객별 체크리스트 조회
     @PostMapping("/getChecklist/{customerId}")
     public ResponseEntity<List<ChecklistItemDTO>> getChecklist(@PathVariable Long customerId) {
-        CustomerEntity customer = CustomerEntity.builder().id(customerId).build();
+        CustomerEntity customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 사용자를 찾을 수 없습니다: " + customerId));
         return ResponseEntity.ok(checklistItemService.getChecklistByCustomer(customer));
     }
     // 카테고리 + 해당 아이템 전체 조회
@@ -31,15 +34,15 @@ public class ChecklistController {
         return ResponseEntity.ok(response);
     }
 
+
     // 체크리스트 항목 추가
     @PostMapping("/getAddItem/{customerId}")
     public ResponseEntity<ChecklistItemDTO> addItem(@PathVariable Long customerId,
-                                                    @RequestParam(required = false) Long categoryId,
                                                     @RequestParam String itemName) {
-        CustomerEntity customer = CustomerEntity.builder().id(customerId).build();
-        ChecklistCategoryEntity category = categoryId != null ? ChecklistCategoryEntity.builder().id(categoryId).build() : null;
+        CustomerEntity customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 사용자를 찾을 수 없습니다: " + customerId));
 
-        ChecklistItemDTO dto = checklistItemService.addChecklistItem(customer, category, itemName);
+        ChecklistItemDTO dto = checklistItemService.addChecklistItem(customer, itemName);
         return ResponseEntity.ok(dto);
     }
 

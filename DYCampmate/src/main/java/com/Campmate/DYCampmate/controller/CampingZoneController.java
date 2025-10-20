@@ -3,6 +3,7 @@ package com.Campmate.DYCampmate.controller;
 import com.Campmate.DYCampmate.dto.CampingZoneDto;
 import com.Campmate.DYCampmate.dto.CampingZoneSaveRequestDto;
 import com.Campmate.DYCampmate.dto.CampingZoneUpdateRequestDto;
+import com.Campmate.DYCampmate.dto.ZoneHomeViewDTO;
 import com.Campmate.DYCampmate.service.CampingZoneService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,8 +23,8 @@ public class CampingZoneController {
 
     // 모든 캠핑존 조회 (GET /api/zones/all)
     @GetMapping("all")
-    public ResponseEntity<List<CampingZoneDto>> getAllZones() {
-        List<CampingZoneDto> zones = campingZoneService.getAllCampingZones();
+    public ResponseEntity<List<ZoneHomeViewDTO>> getAllZones() {
+        List<ZoneHomeViewDTO> zones = campingZoneService.getAllCampingZones();
         return ResponseEntity.ok(zones);
     }
 

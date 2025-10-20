@@ -53,25 +53,21 @@ public class CustomerService {
         if (!passwordEncoder.matches(dto.getCustomerPassword(), customer.getPassword())) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
-        /*비밀번호 Encoder 미사용 시
-        if (!dto.getCustomerPassword().equals(customer.getPassword())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
-        }
-        */
 
         String token = jwtUtil.generateToken(customer.getCustomerId());
 
+
         return CustomerLoginResponseDTO.builder()
-//                .userName(customer.getNickname() != null ? customer.getNickname() : customer.getCustomerId())
+                .id(customer.getId())
+                .userName(customer.getNickname())
                 .token(token)
                 .build();
     }
 
     //CustomerController
     public CustomerResponseDTO getCustomerById(Long id) {
-        CustomerEntity customer = customerRepository.findByCustomerId(String.valueOf(id))
+        CustomerEntity customer = customerRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 고객을 찾을 수 없습니다."));
-
         return CustomerResponseDTO.builder()
                 .id(customer.getId())
                 .customerId(customer.getCustomerId())
@@ -85,12 +81,11 @@ public class CustomerService {
 
     public CustomerFindIdResponseDTO findCustomerId(String email, String nickname) {
         Optional<CustomerEntity> customerOpt = customerRepository.findByEmailAndNickname(email, nickname);
-
         return customerOpt.
                 map(customer -> new CustomerFindIdResponseDTO
-                    (true, customer.getCustomerId(), "성공"))
+                        (true, customer.getCustomerId(), "성공"))
                 .orElseGet(() -> new CustomerFindIdResponseDTO
-                    (false, null, "회원 정보 없음"));
+                        (false, null, "회원 정보 없음"));
     }
 
 

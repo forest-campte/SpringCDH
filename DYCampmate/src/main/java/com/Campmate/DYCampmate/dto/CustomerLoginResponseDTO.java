@@ -8,6 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class CustomerLoginResponseDTO {
+    private Long id;
+    private String userName;
     private String token;
-
 }

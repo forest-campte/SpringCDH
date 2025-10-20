@@ -16,13 +16,7 @@ public class AdminResponseDTO {
     private String campingType;
 
 
-    public AdminResponseDTO(Long id, String email, String password, String name) {
-        this.id = id;
-        this.email = email;
-        this.password = password;
-        this.name = name;
 
-    }
 
 
     public AdminResponseDTO(AdminEntity admin) {

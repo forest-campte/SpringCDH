@@ -9,6 +9,7 @@ public record CampingZoneDto(
         Long id,
         String name,
         String description,
+        String imageUrl,
         int capacity,
         int price,
         String type,
@@ -23,6 +24,7 @@ public record CampingZoneDto(
                 .id(entity.getId())
                 .name(entity.getName())
                 .description(entity.getDescription())
+                .imageUrl(entity.getImageUrl())
                 .capacity(entity.getCapacity())
                 .price(entity.getPrice())
                 .type(entity.getType())
