@@ -28,6 +28,7 @@ public interface CampingZoneRepository extends JpaRepository<CampingZone,Long> {
      */
     @Query("SELECT new com.Campmate.DYCampmate.dto.ZoneHomeViewDTO(cz.id, cz.name, cz.description, cz.imageUrl, CAST(COALESCE(AVG(r.rating), 0.0) AS double)) " +
             "FROM CampingZone cz LEFT JOIN cz.reviews r " +
-            "GROUP BY cz.id")
+            "GROUP BY cz.id " +
+            "ORDER BY cz.id DESC")
     List<ZoneHomeViewDTO> findAllWithAverageRating();
 }
