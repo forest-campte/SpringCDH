@@ -24,7 +24,7 @@ interface ApiService {
     @POST("customer/signup")
     suspend fun signup(@Body request: SignupRequest): Response<Unit>
 
-    @GET("api/zones/all")
+    @GET("api/zones/list")
     suspend fun getAllCampsites(): Response<List<Campsite>>
 
     @POST("reviews")

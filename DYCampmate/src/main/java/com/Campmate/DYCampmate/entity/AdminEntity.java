@@ -21,9 +21,9 @@ public class AdminEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;  // int(15) → Integer
+    private Long id;
 
-    @Setter
+//  @Setter
     @Column(nullable = false, length = 255, unique = true)
     private String email;
 
@@ -32,6 +32,12 @@ public class AdminEntity {
 
     @Column(nullable = false, length = 255)
     private String name;
+
+    @Column(length = 255)
+    private String address;
+
+    @Column(name = "image_url", length = 255)
+    private String imageUrl;
 
     @Column(nullable = false, length = 255)
     private String description;
@@ -49,7 +55,16 @@ public class AdminEntity {
     private LocalDateTime createDt;
 
 
-
+    public void update(String email, String name, String description, String campingStyle, String campingBackground, String campingType, String address, String imageUrl) {
+        if (email != null) this.email = email;
+        if (name != null) this.name = name;
+        if (description != null) this.description = description;
+        if (campingStyle != null) this.campingStyle = campingStyle;
+        if (campingBackground != null) this.campingBackground = campingBackground;
+        if (campingType != null) this.campingType = campingType;
+        if (address != null) this.address = address;
+        if (imageUrl != null) this.imageUrl = imageUrl;
+    }
 
 
 

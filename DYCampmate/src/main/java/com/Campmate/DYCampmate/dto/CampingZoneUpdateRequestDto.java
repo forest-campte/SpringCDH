@@ -9,6 +9,7 @@ public record CampingZoneUpdateRequestDto(
         String defaultSize,
         String floor,
         Integer parking,
-        Integer isActive
+        Integer isActive,
+        String imageUrl
 ) {
 }

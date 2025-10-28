@@ -29,23 +29,31 @@ public class CampingZoneService {
 
     // 로그인 시
     // 관리자 기준 캠핑존 조회
-    public List<CampingZoneDto> getZonesForAdmin(Long adminId) {
-        return campingZoneRepository.findAllByAdmin_Id(adminId)
+    public List<CampingZoneDto> getZonesForAdmin(AdminEntity admin) {
+        return campingZoneRepository.findByAdmin(admin)
                 .stream()
                 .map(CampingZoneDto::from)
                 .collect(Collectors.toList());
     }
 
     // 전체 캠핑존 조회 (홈 화면용)
-    public List<ZoneHomeViewDTO> getAllCampingZones() {
+    public List<ZoneHomeViewDTO> getAllCampingZonesWithRating() {
         return campingZoneRepository.findAllWithAverageRating();
     }
 
+    //AdminWeb
+    public List<CampingZoneDto> getAllCampingZones() {
+        return campingZoneRepository.findAll().stream()
+                .map(CampingZoneDto::from)
+                .collect(Collectors.toList());
+    }
+
+
     // 캠핑존 생성
     @Transactional
-    public CampingZoneDto createCampingZone(CampingZoneSaveRequestDto requestDto) {
-        AdminEntity admin = adminRepository.findById(requestDto.adminId())
-                .orElseThrow(() -> new EntityNotFoundException("Admin not found with id: " + requestDto.adminId()));
+    public CampingZoneDto createCampingZone(AdminEntity admin, CampingZoneSaveRequestDto requestDto) {
+//        admin = adminRepository.findById(requestDto.adminId())
+//                .orElseThrow(() -> new EntityNotFoundException("Admin not found with id: " + requestDto.adminId()));
 
         CampingZone newCampingZone = requestDto.toEntity(admin);
         CampingZone savedCampingZone = campingZoneRepository.save(newCampingZone);
@@ -54,9 +62,14 @@ public class CampingZoneService {
 
     // 캠핑존 수정
     @Transactional
-    public CampingZoneDto updateCampingZone(Long zoneId, CampingZoneUpdateRequestDto requestDto) {
+    public CampingZoneDto updateCampingZone(AdminEntity admin, Long zoneId, CampingZoneUpdateRequestDto requestDto) {
         CampingZone campingZone = campingZoneRepository.findById(zoneId)
                 .orElseThrow(() -> new EntityNotFoundException("CampingZone not found with id: " + zoneId));
+
+        // 권한 확인 (선택적이지만 권장)
+        if (!campingZone.getAdmin().getId().equals(admin.getId())) {
+            throw new SecurityException("수정할 권한이 없습니다.");
+        }
 
         campingZone.update(
                 requestDto.name(),
@@ -66,12 +79,10 @@ public class CampingZoneService {
                 requestDto.type(),
                 requestDto.defaultSize(),
                 requestDto.floor(),
-                requestDto.parking() == 1,
-                requestDto.isActive() == 1
+                requestDto.parking() != null && requestDto.parking() == 1, // null 체크 추가
+                requestDto.isActive() != null && requestDto.isActive() == 1, // null 체크 추가
+                requestDto.imageUrl()
         );
-        // campingZone은 영속성 컨텍스트에 의해 관리되므로,
-        // @Transactional 어노테이션 덕분에 메서드 종료 시 변경 감지(dirty checking)가 일어나 DB에 자동으로 반영됩니다.
-        // 따라서 save()를 명시적으로 호출할 필요가 없습니다.
 
         return CampingZoneDto.from(campingZone);
     }

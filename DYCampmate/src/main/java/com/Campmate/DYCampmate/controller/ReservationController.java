@@ -3,11 +3,17 @@ package com.Campmate.DYCampmate.controller;
 import com.Campmate.DYCampmate.dto.ReservationDTO;
 import com.Campmate.DYCampmate.entity.AdminEntity;
 import com.Campmate.DYCampmate.entity.ReservationEntity;
+import com.Campmate.DYCampmate.repository.AdminRepo;
+import com.Campmate.DYCampmate.service.AdminService;
 import com.Campmate.DYCampmate.service.ReservationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -19,16 +25,24 @@ import java.util.List;
 public class ReservationController {
 
     private final ReservationService reservationService;
+    private final AdminRepo adminRepository;
 
     // 로그인한 Admin 아이디를 가져와서 조회함.
     @GetMapping
     public ResponseEntity<List<ReservationDTO>> getMyReservations(@AuthenticationPrincipal User user) {
-        // @AuthenticationPrincipal을 통해 현재 로그인한 사용자의 ID(username 필드에 저장됨)를 가져옴
-        // ID가 Long 타입이므로 변환
-        Long adminId = Long.parseLong(user.getUsername());
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // 📝 HttpStatus import 확인
+        }
+        Long adminId = Long.parseLong(authentication.getName());
 
-        // 해당 관리자의 예약 목록을 조회
-        List<ReservationDTO> reservations = reservationService.getReservationsForAdmin(adminId);
+        // --- [핵심 수정 1] ---
+        // adminId로 AdminEntity 조회
+        AdminEntity currentAdmin = adminRepository.findById(adminId)
+                .orElseThrow(() -> new UsernameNotFoundException("Admin not found with ID: " + adminId));
+        // 서비스 메서드에 AdminEntity 전달
+        List<ReservationDTO> reservations = reservationService.getReservationsForAdmin(currentAdmin);
+        // -----------------------
 
         return ResponseEntity.ok(reservations);
     }
@@ -48,8 +62,12 @@ public class ReservationController {
      */
     @GetMapping("/admin/{adminId}")
     public ResponseEntity<List<ReservationDTO>> getReservationsByAdmin(@PathVariable Long adminId) {
-        AdminEntity admin = AdminEntity.builder().id(adminId).build();
-        List<ReservationDTO> reservations = reservationService.getReservation(admin);
+        // adminId로 AdminEntity 조회
+        AdminEntity admin = adminRepository.findById(adminId)
+                .orElseThrow(() -> new UsernameNotFoundException("Admin not found with ID: " + adminId));
+        // 서비스 메서드에 AdminEntity 전달
+        List<ReservationDTO> reservations = reservationService.getReservationsForAdmin(admin);
+
         return ResponseEntity.ok(reservations);
     }
 
@@ -67,8 +85,19 @@ public class ReservationController {
             @PathVariable Long adminId,
             @RequestParam("status") List<ReservationEntity.ReservationStatus> status) { // String 대신 Enum 타입으로 직접 받도록 변경
 
-        // 서비스 레이어에 adminId와 status를 직접 전달하여 로직 처리
-        List<ReservationDTO> reservations = reservationService.getReservationsByAdminAndStatus(adminId, status);
+        // adminId로 AdminEntity 조회
+        AdminEntity admin = adminRepository.findById(adminId)
+                .orElseThrow(() -> new UsernameNotFoundException("Admin not found with ID: " + adminId));
+
+        // 서비스 메서드 확인 및 호출
+        if (status == null || status.isEmpty()) {
+            return ResponseEntity.badRequest().body(null);
+        }
+        // --- [핵심 수정 3] ---
+        // 서비스 메서드 이름과 파라미터 확인 (단일 상태 조회)
+        List<ReservationDTO> reservations = reservationService.getReservationsByStatus(admin, status.get(0));
+        // -----------------------
+
 
         // 조회된 예약 목록을 반환
         return ResponseEntity.ok(reservations);
@@ -83,7 +112,10 @@ public class ReservationController {
             @PathVariable Long adminId,
             @RequestParam List<ReservationEntity.ReservationStatus> statuses) {
 
-        AdminEntity admin = AdminEntity.builder().id(adminId).build();
+        // adminId로 AdminEntity 조회
+        AdminEntity admin = adminRepository.findById(adminId)
+                .orElseThrow(() -> new UsernameNotFoundException("Admin not found with ID: " + adminId));
+        // 서비스 메서드에 AdminEntity 전달 (변경 없음)
         List<ReservationDTO> reservations =
                 reservationService.getReservationsByStatuses(admin, statuses);
 

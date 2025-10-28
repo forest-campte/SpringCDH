@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 public class AdminDTO {
-    private Long id;
     private String email;
     private String password;
     private String name;
@@ -19,16 +18,21 @@ public class AdminDTO {
     private String campingBackground;
     private String campingType;
     private LocalDateTime createDt;
+    private String address;
+    private String imageUrl;
 
-    public static AdminDTO fromEntity(AdminEntity admin) {
-        return AdminDTO.builder()
-                .id(admin.getId())
-                .name(admin.getName())
-                .description(admin.getDescription())
-                .campingStyle(admin.getCampingStyle())
-                .campingBackground(admin.getCampingBackground())
-                .campingType(admin.getCampingType())
-                .build();
+    public static AdminDTO fromEntity(AdminEntity entity) {
+        return new AdminDTO(
+                entity.getEmail(),
+                null, // Password should not be sent to the client
+                entity.getName(),
+                entity.getDescription(),
+                entity.getCampingStyle(),
+                entity.getCampingBackground(),
+                entity.getCampingType(),
+                entity.getCreateDt(),
+                entity.getAddress(),
+                entity.getImageUrl()
+        );
     }
-
 }

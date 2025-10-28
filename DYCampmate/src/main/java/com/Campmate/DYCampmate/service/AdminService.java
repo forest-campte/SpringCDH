@@ -1,13 +1,16 @@
 package com.Campmate.DYCampmate.service;
 
 import com.Campmate.DYCampmate.dto.AdminDTO;
+import com.Campmate.DYCampmate.dto.AdminUpdateRequestDto;
 import com.Campmate.DYCampmate.entity.AdminEntity;
 import com.Campmate.DYCampmate.entity.CustomerEntity;
 import com.Campmate.DYCampmate.repository.AdminRepo;
 import com.Campmate.DYCampmate.repository.CustomerRepo;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.AbstractMap;
@@ -18,7 +21,6 @@ import java.util.List;
 public class AdminService {
     private final AdminRepo adminRepository;
     private final PasswordEncoder passwordEncoder;
-//    public AdminService(AdminRepo adminRepo) { this.adminRepo = adminRepo;}
     private final CustomerRepo customerRepo;
 
     //AutoConroller
@@ -41,10 +43,31 @@ public class AdminService {
                 .campingStyle(dto.getCampingStyle())
                 .campingBackground(dto.getCampingBackground())
                 .campingType(dto.getCampingType())
+                .address(dto.getAddress())
+                .imageUrl(dto.getImageUrl())
                 .createDt(LocalDateTime.now())
                 .build();
 
         adminRepository.save(admin); // 실제 DB 저장
+    }
+
+    // 관리자 정보 수정
+    @Transactional
+    public AdminEntity updateAdmin(Long adminId, AdminUpdateRequestDto updateDto) {
+        AdminEntity admin = adminRepository.findById(adminId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 관리자를 찾을 수 없습니다: " + adminId));
+
+        admin.update(
+                updateDto.email(),
+                updateDto.name(),
+                updateDto.description(),
+                updateDto.campingStyle(),
+                updateDto.campingBackground(),
+                updateDto.campingType(),
+                updateDto.address(),
+                updateDto.imageUrl()
+        );
+        return admin;
     }
 
     //맞춤형 캠핑장 리스트 검색
