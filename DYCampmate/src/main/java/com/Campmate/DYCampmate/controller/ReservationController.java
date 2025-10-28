@@ -1,6 +1,8 @@
 package com.Campmate.DYCampmate.controller;
 
 import com.Campmate.DYCampmate.dto.ReservationDTO;
+import com.Campmate.DYCampmate.dto.ReservationRequestDTO;
+import com.Campmate.DYCampmate.dto.ReservationResponseDTO;
 import com.Campmate.DYCampmate.entity.AdminEntity;
 import com.Campmate.DYCampmate.entity.ReservationEntity;
 import com.Campmate.DYCampmate.repository.AdminRepo;
@@ -122,6 +124,55 @@ public class ReservationController {
         return ResponseEntity.ok(reservations);
     }
 
+//    @PostMapping("/make")
+//    public ResponseEntity<Void> makeReservation(
+//            @RequestHeader("Authorization") String token,
+//            @RequestBody ReservationDTO request) {
+//
+//        reservationService.createReservation(request);
+//
+////        return ResponseEntity.ok().build();
+//    }
 
+//    @GetMapping("/{customerId}")
+//    public ResponseEntity<List<Reservation>> getMyReservations(
+//            @PathVariable("customerId") Long customerId) {
+//
+//        List<ReservationEntity> reservations = reservationService.getReservationsByCustomerId(customerId);
+//
+//        // 조회된 예약 목록과 200 OK 상태 코드를 반환합니다.
+//        return ResponseEntity.ok(reservations);
+//    }
 
+    /**
+     * 예약 생성 API
+     * POST("api/reservations/make")
+     */
+    @PostMapping("/make")
+    public ResponseEntity<Void> makeReservation(
+            @RequestHeader("Authorization") String token,
+            @RequestBody ReservationRequestDTO request
+    ) {
+        reservationService.makeReservation(token, request);
+        return ResponseEntity.ok().build(); // 프론트가 Response<Unit> 받음
+    }
+
+    /**
+     * 고객의 예약 목록 조회 API
+     * GET("api/reservations/{customerId}")
+     */
+    @GetMapping("/{customerId}")
+    public ResponseEntity<List<ReservationResponseDTO>> getMyReservations(
+            @PathVariable Long customerId
+    ) {
+        List<ReservationResponseDTO> reservations = reservationService.getMyReservations(customerId);
+        return ResponseEntity.ok(reservations);
+    }
+
+    // 예약 취소
+    @PutMapping("/{id}/cancel")
+    public String cancelReservation(@PathVariable Long id) {
+        reservationService.cancelReservation(id);
+        return "예약이 취소되었습니다.";
+    }
 }

@@ -33,7 +33,8 @@ class CampsiteDetailViewModel @Inject constructor(
     val reviews: StateFlow<List<Review>> = _reviews
 
     init {
-        val campsiteId = savedStateHandle.get<Long>("campsiteId")
+        // 1. Int로 받은 뒤 .toLong()으로 변환 (가장 안전한 방법) cdh1028
+        val campsiteId: Long = (savedStateHandle.get<Int>("campsiteId") ?: 0).toLong()
         if (campsiteId != null) {
             fetchCampsiteDetails(campsiteId)
             fetchReviews(campsiteId)

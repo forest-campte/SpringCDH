@@ -86,7 +86,7 @@ interface ApiService {
      * @Body request: 예약에 필요한 정보 (ReservationRequest)
      * @return Response<Unit> (회원가입처럼 성공 여부만 받음)
      */
-    @POST("api/reservations") // 👈 백엔드 팀과 실제 엔드포인트 확인! -> cdh1028 확인
+    @POST("api/reservations/make") // 👈 백엔드 팀과 실제 엔드포인트 확인! -> cdh1028 확인
     suspend fun makeReservation(
         @Header("Authorization") token: String,
         @Body request: ReservationRequest

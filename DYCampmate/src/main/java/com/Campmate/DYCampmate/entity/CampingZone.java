@@ -57,7 +57,8 @@ public class CampingZone extends BaseTimeEntity {
     private List<ReviewEntity> reviews = new ArrayList<>();
 
     @Builder
-    public CampingZone(AdminEntity admin, String name, String description, Integer capacity, Integer price, String type, String defaultSize, String floor, boolean parking, boolean isActive, String imageUrl) {
+    public CampingZone(Long id, AdminEntity admin, String name, String description, Integer capacity, Integer price, String type, String defaultSize, String floor, boolean parking, boolean isActive, String imageUrl) {
+        this.id = id;
         this.admin = admin;
         this.name = name;
         this.description = description;

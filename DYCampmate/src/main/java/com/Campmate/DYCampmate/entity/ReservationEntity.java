@@ -24,17 +24,26 @@ public class ReservationEntity {
     @JoinColumn(name = "camping_zone_id", referencedColumnName = "id")
     private CampingZone campingZone;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "admins_id")
+    private AdminEntity admin;
+
     // 고객 외래키
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customers_id", referencedColumnName = "id")
     private CustomerEntity customer;
 
-    //실제 DB 컬럼명과 다를경우 name 속성 필수
     @Column(name = "customer_name", length = 255)
     private String customerName;
-    //실제 DB 컬럼명과 다를경우 name 속성 필수
+
     @Column(name = "customer_phone", length = 255)
     private String customerPhone;
+
+    @Column
+    private int adults;
+
+    @Column
+    private int children;
 
     @Column(name = "check_in", nullable = false)
     private LocalDate checkIn;
@@ -49,11 +58,17 @@ public class ReservationEntity {
     @Column(name = "created_dt", nullable = false)
     private LocalDateTime createDt;
 
+    @PrePersist
+    public void prePersist() {
+        this.createDt = LocalDateTime.now();
+        if (this.status == null) this.status = ReservationStatus.R;
+    }
+
     public enum ReservationStatus {
         R, // 예약됨
         C, // 취소됨
         E  // 완료
     }
 
-
+    private String selectedSiteName;
 }

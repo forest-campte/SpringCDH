@@ -16,6 +16,8 @@ public class ReservationDTO {
     private Long id;
     private String customerName;
     private String customerPhone;
+    private int adults;
+    private int children;
     private LocalDate checkIn;
     private LocalDate checkOut;
     private String status;
@@ -29,6 +31,8 @@ public class ReservationDTO {
                 .id(entity.getId())
                 .customerName(entity.getCustomerName())
                 .customerPhone(entity.getCustomerPhone())
+                .adults(entity.getAdults())
+                .children(entity.getChildren())
                 .checkIn(entity.getCheckIn())
                 .checkOut(entity.getCheckOut())
                 .status(String.valueOf(entity.getStatus()))
