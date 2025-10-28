@@ -95,4 +95,11 @@ interface ApiService {
     suspend fun getMyReservations(
         @Path("customerId") customerId: Long
     ): Response<List<Reservation>>
+
+    @GET("customer/forecast")
+    suspend fun getForecast(
+        @Query("lat") lat: Double,
+        @Query("lon") lon: Double
+    ): List<WeatherResponse>
+
 }

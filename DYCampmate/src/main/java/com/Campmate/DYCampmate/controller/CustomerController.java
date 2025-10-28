@@ -4,10 +4,12 @@ import com.Campmate.DYCampmate.dto.*;
 import com.Campmate.DYCampmate.entity.CustomerEntity;
 import com.Campmate.DYCampmate.service.AdminService;
 import com.Campmate.DYCampmate.service.CustomerService;
+import com.Campmate.DYCampmate.service.WeatherService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -19,7 +21,7 @@ import java.util.List;
 public class CustomerController {
     private final CustomerService customerService;
     private final AdminService adminService;
-
+    private final WeatherService weatherService;
 
     @PostMapping("/signup")
     public ResponseEntity<CustomerSimpleResponseDTO> registerCustomer(@RequestBody CustomerRequestDTO dto) {
@@ -76,4 +78,16 @@ public class CustomerController {
     public ResponseEntity<CustomerFindIdResponseDTO> findId(@RequestBody CustomerFindIdRequestDTO dto) {
         return ResponseEntity.ok(customerService.findCustomerId(dto.getEmail(), dto.getNickname()));
     }
+
+    @GetMapping("/forecast")
+    public Mono<ResponseEntity<List<WeatherDTO>>> getForecast(
+            @RequestParam String lat,
+            @RequestParam String lon) {
+
+        return weatherService.getFiveDayForecast(lat, lon)
+                .map(ResponseEntity::ok) // 성공 시 List<WeatherDto> 반환
+                .defaultIfEmpty(ResponseEntity.notFound().build());
+    }
+
+
 }
