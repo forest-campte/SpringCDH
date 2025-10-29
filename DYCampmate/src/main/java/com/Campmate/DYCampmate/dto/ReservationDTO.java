@@ -16,8 +16,8 @@ public class ReservationDTO {
     private Long id;
     private String customerName;
     private String customerPhone;
-    private int adults;
-    private int children;
+    private Integer adults;
+    private Integer children;
     private LocalDate checkIn;
     private LocalDate checkOut;
     private String status;

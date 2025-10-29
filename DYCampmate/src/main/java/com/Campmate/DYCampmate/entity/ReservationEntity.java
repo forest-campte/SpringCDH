@@ -39,11 +39,11 @@ public class ReservationEntity {
     @Column(name = "customer_phone", length = 255)
     private String customerPhone;
 
-    @Column
-    private int adults;
+    @Column(name = "adults", nullable = true)
+    private Integer adults;
 
-    @Column
-    private int children;
+    @Column(name = "children", nullable = true)
+    private Integer children;
 
     @Column(name = "check_in", nullable = false)
     private LocalDate checkIn;
@@ -70,5 +70,4 @@ public class ReservationEntity {
         E  // 완료
     }
 
-    private String selectedSiteName;
 }

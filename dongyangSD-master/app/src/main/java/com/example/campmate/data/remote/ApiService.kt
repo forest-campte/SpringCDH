@@ -91,6 +91,7 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Body request: ReservationRequest
     ): Response<Unit> // 백엔드가 예약 성공 시 데이터를 준다면 Unit 대신 DTO로 변경
+
     @GET("api/reservations/{custimerId}")
     suspend fun getMyReservations(
         @Path("customerId") customerId: Long

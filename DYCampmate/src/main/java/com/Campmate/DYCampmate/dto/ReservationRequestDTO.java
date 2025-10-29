@@ -15,7 +15,7 @@ public class ReservationRequestDTO {
     private String campingZoneId;
     private String checkIn;
     private String checkOut;
-    private int adults;
-    private int children;
+    private Integer adults;
+    private Integer children;
 
 }
