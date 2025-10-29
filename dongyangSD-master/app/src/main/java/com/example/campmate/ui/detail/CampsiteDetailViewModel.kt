@@ -32,6 +32,8 @@ class CampsiteDetailViewModel @Inject constructor(
     private val _reviews = MutableStateFlow<List<Review>>(emptyList())
     val reviews: StateFlow<List<Review>> = _reviews
 
+    /*
+
     init {
         // 1. Int로 받은 뒤 .toLong()으로 변환 (가장 안전한 방법) cdh1028
         val campsiteId: Long = (savedStateHandle.get<Int>("campsiteId") ?: 0).toLong()
@@ -41,9 +43,72 @@ class CampsiteDetailViewModel @Inject constructor(
         }
     }
 
+    1030cdh 로딩 및 에러 상태 */
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading
+
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
+
+    init {
+        val campsiteId: Long = (savedStateHandle.get<Int>("campsiteId") ?: 0).toLong()
+        if (campsiteId > 0) { // 0일 경우 로드하지 않음
+            fetchAllDetails(campsiteId)
+        } else {
+            _error.value = "유효하지 않은 캠핑장 ID입니다."
+            _isLoading.value = false
+        }
+    }
+
+
+    /*
     // (fetchCampsiteDetails, fetchReviews 함수는 이전과 동일)
+
     private fun fetchCampsiteDetails(campsiteId: Long) { /* ... */ }
     private fun fetchReviews(campsiteId: Long) { /* ... */ }
+
+    //
+    1030cdh fetch 두개를 동시에 관리하는 함수 */
+    private fun fetchAllDetails(campsiteId: Long) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _error.value = null
+            try {
+                // 두 API 호출을 동시에 (또는 순차적으로) 실행
+                fetchCampsiteDetails(campsiteId)
+                fetchReviews(campsiteId)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _error.value = "데이터 로딩 중 오류 발생: ${e.message}"
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+    // fetchCampsiteDetails 구현
+    private suspend fun fetchCampsiteDetails(campsiteId: Long) {
+
+        val response = apiService.getCampsiteDetail(campsiteId) // 🚨 이 함수는 ApiService에 정의되어 있어야 함
+        if (response.isSuccessful) {
+            _campsite.value = response.body()
+        } else {
+            throw Exception("캠핑장 정보 로드 실패: ${response.code()}")
+        }
+    }
+
+    // fetchReviews 구현
+    private suspend fun fetchReviews(campsiteId: Long) {
+        // (참고: ApiService에 getCampsiteReviews(id) 함수가 있다고 가정)
+        val response = apiService.getCampsiteReviews(campsiteId) // 🚨 이 함수는 ApiService에 정의되어 있어야 함
+        if (response.isSuccessful) {
+            _reviews.value = response.body() ?: emptyList()
+        } else {
+            throw Exception("리뷰 정보 로드 실패: ${response.code()}")
+        }
+    }
+
+
+
 
     // 날짜 포맷 함수
     private fun formatDate(millis: Long): String {

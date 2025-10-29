@@ -10,9 +10,11 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ReservationRepo extends JpaRepository<ReservationEntity, Long> {
+
 
 
     //해당 admin의 모든 status

@@ -15,15 +15,13 @@ interface ApiService {
     suspend fun signup(@Body request: SignupRequest): Response<Unit>
 
     // --- 캠핑장 ---
-//    @GET("campsites")
-//    suspend fun getAllCampsites(): Response<List<Campsite>>
-    @GET("api/zones/home") // 수정: cdh1028
-    suspend fun getAllCampsites(): Response<List<Campsite>>
+    // 1030cdh
+    @GET("api/zones/home") // 백엔드의 URL이 "home"이 맞는지 확인하세요.
+    suspend fun getAllCampsites(): Response<List<AdminZoneGroup>>
 
     // ✅ [추가] 특정 ID의 캠핑장 상세 정보를 가져옵니다.
-    //임시 제외: cdh1028
-//    @GET("campsites/{id}")
-//    suspend fun getCampsiteDetail(@Path("id") campsiteId: Long): Response<Campsite>
+    @GET("api/zones/{id}")
+    suspend fun getCampsiteDetail(@Path("id") campsiteId: Long): Response<Campsite>
 
     // --- 리뷰 ---
     @POST("reviews/submit") // 수정: cdh1028
@@ -35,8 +33,8 @@ interface ApiService {
 
     // ✅✅✅ [핵심] ViewModel이 찾고 있던 'getCampsiteReviews' 함수입니다. ✅✅✅
     // (백엔드에 GET /reviews/campsite/{id} 주소가 필요합니다)
-    // cdh1028 :
-    @GET("reviews/campsite/{id}")
+    // cdh1030 : 주소 수정
+    @GET("api/zones/{id}/reviews")
     suspend fun getCampsiteReviews(@Path("id") campsiteId: Long): Response<List<Review>>
 
     // --- 체크리스트 ---
@@ -60,22 +58,7 @@ interface ApiService {
 
     @DELETE("/api/checklist/{itemId}")
     suspend fun deleteChecklistItem(@Path("itemId") itemId: Long): Response<Unit>
-    /* 중복 주석 처리 : cdh1028
-    @GET("checklist/{customerId}")
-    suspend fun getMyChecklist(@Path("customerId") customerId: Long): Response<List<ChecklistItem>>
 
-    @GET("checklist/presets")
-    suspend fun getChecklistPresets(): Response<Map<String, List<String>>>
-
-    @POST("checklist/{customerId}")
-    suspend fun addChecklistItem(@Path("customerId") customerId: Long, @Body body: Map<String, String>): Response<ChecklistItem>
-
-    @PUT("checklist/{itemId}")
-    suspend fun updateChecklistItem(@Path("itemId") itemId: Long, @Body body: Map<String, Boolean>): Response<ChecklistItem>
-
-    @DELETE("checklist/{itemId}")
-    suspend fun deleteChecklistItem(@Path("itemId") itemId: Long): Response<Unit>
-    */
 
 
     /**
@@ -104,3 +87,25 @@ interface ApiService {
     ): List<WeatherResponse>
 
 }
+
+
+
+
+
+
+/* 중복 주석 처리 : cdh1028
+    @GET("checklist/{customerId}")
+    suspend fun getMyChecklist(@Path("customerId") customerId: Long): Response<List<ChecklistItem>>
+
+    @GET("checklist/presets")
+    suspend fun getChecklistPresets(): Response<Map<String, List<String>>>
+
+    @POST("checklist/{customerId}")
+    suspend fun addChecklistItem(@Path("customerId") customerId: Long, @Body body: Map<String, String>): Response<ChecklistItem>
+
+    @PUT("checklist/{itemId}")
+    suspend fun updateChecklistItem(@Path("itemId") itemId: Long, @Body body: Map<String, Boolean>): Response<ChecklistItem>
+
+    @DELETE("checklist/{itemId}")
+    suspend fun deleteChecklistItem(@Path("itemId") itemId: Long): Response<Unit>
+    */

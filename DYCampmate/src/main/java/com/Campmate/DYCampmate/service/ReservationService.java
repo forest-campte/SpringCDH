@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,6 +31,7 @@ public class ReservationService {
     private final AdminRepo adminRepo;
     private final CustomerRepo customerRepo;
     private final JwtUtil jwtUtil;
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
 
     /**
@@ -79,26 +81,59 @@ public class ReservationService {
 //        throw new UnsupportedOperationException("findByAdminIdAndStatusInWithCampingZone 메서드가 ReservationRepo에 정의되지 않았습니다.");
     }
 
-    public void makeReservation(String token, ReservationRequestDTO request) {
-        // "Bearer " 제거
-        String pureToken = token.startsWith("Bearer ") ? token.substring(7) : token;
+    // (Principal.getName()이 customerId라고 가정)
+    public void makeReservation(ReservationRequestDTO request, String userLoginId) {
 
-        String customerIdStr = jwtUtil.getCustomerIdFromToken(pureToken);
-        Long customerId = Long.parseLong(customerIdStr);
+        // 1.customerId로 CustomerEntity 찾기
+        CustomerEntity customer = customerRepo.findByCustomerId(userLoginId)
+                .orElseThrow(() -> new IllegalArgumentException("Customer not found: " + userLoginId));
 
-        CustomerEntity customer = customerRepo.findById(customerId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 고객입니다."));
+        // 2. campingZoneId로 CampingZone 엔티티 찾기
+        CampingZone zone = campingZoneRepo.findById(request.getCampingZoneId())
+                .orElseThrow(() -> new IllegalArgumentException("Zone not found: " + request.getCampingZoneId()));
 
+        // 3. adminsId로 AdminEntity 찾기 (ReservationEntity에 필요)
         AdminEntity admin = adminRepo.findById(request.getAdminsId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 관리자입니다."));
+                .orElseThrow(() -> new IllegalArgumentException("Admin not found: " + request.getAdminsId()));
 
-        CampingZone zone = campingZoneRepo.findById(Long.parseLong(request.getCampingZoneId()))
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 캠핑존입니다."));
+        // (4. TODO: 날짜 겹치는지 확인하는 유효성 검사 로직)
 
+        // 5. ReservationEntity 생성 및 저장
+        ReservationEntity reservation = ReservationEntity.builder()
+                .customer(customer) //
+                .campingZone(zone)
+                .admin(admin) //
+                .checkIn(LocalDate.parse(request.getCheckIn(), formatter))
+                .checkOut(LocalDate.parse(request.getCheckOut(), formatter))
+                .adults(request.getAdults())
+                .children(request.getChildren())
+                // .status(ReservationStatus.R) // @PrePersist가 처리
+                .build();
 
-        ReservationEntity entity = this.toEntity(request, customer, admin, zone);
-        reservationRepo.save(entity);
+        reservationRepo.save(reservation);
     }
+
+
+//    public void makeReservation(String token, ReservationRequestDTO request) {
+//        // "Bearer " 제거
+//        String pureToken = token.startsWith("Bearer ") ? token.substring(7) : token;
+//
+//        String customerIdStr = jwtUtil.getCustomerIdFromToken(pureToken);
+//        Long customerId = Long.parseLong(customerIdStr);
+//
+//        CustomerEntity customer = customerRepo.findById(customerId)
+//                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 고객입니다."));
+//
+//        AdminEntity admin = adminRepo.findById(request.getAdminsId())
+//                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 관리자입니다."));
+//
+//        CampingZone zone = campingZoneRepo.findById(Long.parseLong(request.getCampingZoneId()))
+//                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 캠핑존입니다."));
+//
+//
+//        ReservationEntity entity = this.toEntity(request, customer, admin, zone);
+//        reservationRepo.save(entity);
+//    }
 
     public List<ReservationResponseDTO> getMyReservations(Long customerId) {
         List<ReservationEntity> reservations = reservationRepo.findByCustomer_Id(customerId);
@@ -152,13 +187,17 @@ public class ReservationService {
      */
     private ReservationResponseDTO toResponse(ReservationEntity entity) {
         return ReservationResponseDTO.builder()
-                .reservationId(entity.getId())
-                .adminName(entity.getAdmin().getName())
-                .ZoneName(entity.getCampingZone().getName())
+                .reservationId(entity.getId().toString())
+                .Campsite(CampingZone.builder()
+                    .id(entity.getCampingZone().getId())
+                    .name(entity.getCampingZone().getName())
+                    .description(entity.getCampingZone().getDescription())
+                    .build())
                 .checkInDate(entity.getCheckIn().toString())
                 .checkOutDate(entity.getCheckOut().toString())
                 .adults(entity.getAdults()!= null ? entity.getAdults() : 0)
                 .children(entity.getChildren() != null? entity.getChildren() : 0)
+                .selectedSiteName(entity.getCampingZone().getName())
                 .build();
     }
 

@@ -28,7 +28,7 @@ public class ReviewController {
     }
 
     // 캠핑존별 리뷰 조회
-    @GetMapping("/camping-zone/{campingZoneId}")
+    @GetMapping("/campsite/{campingZoneId}")
     public ResponseEntity<List<ReviewResponseDTO>> getReviewsByCampingZone(@PathVariable Long campingZoneId) {
         return ResponseEntity.ok(reviewService.getReviewsByCampingZone(campingZoneId));
     }

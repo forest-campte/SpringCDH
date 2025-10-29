@@ -2,6 +2,7 @@ package com.example.campmate.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.campmate.data.model.AdminZoneGroup
 import com.example.campmate.data.model.Campsite
 import com.example.campmate.data.remote.ApiService
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -12,7 +13,9 @@ import javax.inject.Inject
 
 sealed class HomeUiState {
     object Loading : HomeUiState()
-    data class Success(val campsites: List<Campsite>) : HomeUiState()
+//    data class Success(val campsites: List<Campsite>) : HomeUiState()
+    //1030cdh
+    data class Success(val adminGroups: List<AdminZoneGroup>) : HomeUiState()
     data class Error(val message: String) : HomeUiState()
 }
 

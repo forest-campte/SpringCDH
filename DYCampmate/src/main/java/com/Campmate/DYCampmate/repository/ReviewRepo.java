@@ -3,6 +3,8 @@ package com.Campmate.DYCampmate.repository;
 import com.Campmate.DYCampmate.entity.CampingZone;
 import com.Campmate.DYCampmate.entity.ReviewEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -15,4 +17,10 @@ public interface ReviewRepo extends JpaRepository<ReviewEntity, Long> {
 
     List<ReviewEntity> findByCampingZone(CampingZone campingZone);
 
+    // 반환 타입을 List<ReviewEntity>로 변경
+    List<ReviewEntity> findAllByCampingZoneId(Long campingZoneId);
+
+    // JPQL의 FROM 절을 ReviewEntity로 변경
+    @Query("SELECT COALESCE(AVG(r.rating), 0.0) FROM ReviewEntity r WHERE r.campingZone.id = :zoneId")
+    Double findAverageRatingByCampingZoneId(@Param("zoneId") Long zoneId);
 }

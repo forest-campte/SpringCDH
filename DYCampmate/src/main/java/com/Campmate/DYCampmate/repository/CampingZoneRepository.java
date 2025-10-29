@@ -1,5 +1,6 @@
 package com.Campmate.DYCampmate.repository;
 
+import com.Campmate.DYCampmate.dto.ZoneAdminRatingDTO;
 import com.Campmate.DYCampmate.dto.ZoneHomeViewDTO;
 import com.Campmate.DYCampmate.entity.AdminEntity;
 import com.Campmate.DYCampmate.entity.CampingZone;
@@ -30,8 +31,18 @@ public interface CampingZoneRepository extends JpaRepository<CampingZone,Long> {
             "FROM CampingZone cz LEFT JOIN cz.reviews r " +
             "GROUP BY cz.id " +
             "ORDER BY cz.id DESC")
-    List<ZoneHomeViewDTO> findAllWithAverageRating();
+    List<ZoneHomeViewDTO> findAllWithAverageRating_Original();
 
+    @Query("SELECT new com.Campmate.DYCampmate.dto.ZoneAdminRatingDTO(" +
+            "    cz.id, cz.name, cz.description, cz.imageUrl, " +
+            "    CAST(COALESCE(AVG(r.rating), 0.0) AS double), " +
+            "    a.id, a.name) " +
+            "FROM CampingZone cz " +
+            "JOIN cz.admin a " +
+            "LEFT JOIN cz.reviews r ON r.campingZone = cz " +
+            "GROUP BY cz.id, a.id, a.name " + // GROUP BY에 admin 정보 추가
+            "ORDER BY a.id, cz.id DESC") // 관리자별로 정렬
+    List<ZoneAdminRatingDTO> findAllWithAdminAndAverageRating();
 
-
+    List<CampingZone> findAllByAdmin(AdminEntity admin);
 }

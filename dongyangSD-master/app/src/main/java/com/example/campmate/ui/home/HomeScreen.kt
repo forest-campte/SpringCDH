@@ -1,5 +1,6 @@
 package com.example.campmate.ui.home
 
+import android.R.attr.fontWeight
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -43,6 +45,9 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.campmate.data.model.Campsite
 
 
+import com.example.campmate.data.model.AdminZoneGroup
+
+
 @Composable
 fun HomeScreen(
     onCampsiteClick: (Int) -> Unit, // (Int) -> Unit 은 숫자(ID) 하나를 받는 클릭 동작이라는 의미입니다.
@@ -59,8 +64,12 @@ fun HomeScreen(
             }
             is HomeUiState.Success -> {
 
-                CampsiteList(
-                    campsites = state.campsites,
+//                CampsiteList(
+//                    campsites = state.campsites,
+//                    onCampsiteClick = onCampsiteClick
+//                )
+                AdminGroupList(
+                    adminGroups = state.adminGroups, // adminGroups 전달
                     onCampsiteClick = onCampsiteClick
                 )
             }
@@ -74,18 +83,56 @@ fun HomeScreen(
     }
 }
 
-
+//1030cdh
+//@Composable
+//fun CampsiteList(campsites: List<Campsite>, onCampsiteClick: (Int) -> Unit) {
+//    LazyColumn(
+//        contentPadding = PaddingValues(16.dp),
+//        verticalArrangement = Arrangement.spacedBy(16.dp)
+//    ) {
+//        items(campsites) { campsite ->
+//            CampsiteCard(
+//                campsite = campsite,
+//                onClick = { onCampsiteClick(campsite.id) }
+//            )
+//        }
+//    }
+//}
 @Composable
-fun CampsiteList(campsites: List<Campsite>, onCampsiteClick: (Int) -> Unit) {
+fun AdminGroupList(adminGroups: List<AdminZoneGroup>, onCampsiteClick: (Int) -> Unit) {
     LazyColumn(
-        contentPadding = PaddingValues(16.dp),
+        contentPadding = PaddingValues(vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        items(campsites) { campsite ->
-            CampsiteCard(
-                campsite = campsite,
-                onClick = { onCampsiteClick(campsite.id) }
-            )
+        items(adminGroups) { group ->
+            AdminGroupItem(group = group, onCampsiteClick = onCampsiteClick)
+        }
+    }
+}
+@Composable
+fun AdminGroupItem(group: AdminZoneGroup, onCampsiteClick: (Int) -> Unit) {
+    Column {
+        // 1. 캠핑장 이름 (그룹 제목)
+        Text(
+            text = group.name, // 관리자 이름 표시
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // 2. 캠핑존 카드 (가로 스크롤)
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items(group.sites) { campsite ->
+
+                CampsiteCard(
+                    campsite = campsite,
+                    onClick = { onCampsiteClick(campsite.id) }
+                )
+            }
         }
     }
 }
@@ -96,7 +143,9 @@ fun CampsiteList(campsites: List<Campsite>, onCampsiteClick: (Int) -> Unit) {
 fun CampsiteCard(campsite: Campsite, onClick: () -> Unit) {
     Card(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
+//        modifier = Modifier.fillMaxWidth(),
+        //1030cdh
+        modifier = Modifier.width(300.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column {
@@ -111,15 +160,18 @@ fun CampsiteCard(campsite: Campsite, onClick: () -> Unit) {
             )
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = campsite.name,
+                    //1030cdh
+                    text = campsite.name ?: "",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = campsite.description,
+                    //1030cdh
+                    text = campsite.description?:"",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.Gray
+                    color = Color.Gray,
+                    maxLines = 2 // 여러 줄 방지
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -131,7 +183,8 @@ fun CampsiteCard(campsite: Campsite, onClick: () -> Unit) {
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = campsite.rating.toString(),
+                        //1030cdh
+                        text = String.format("%.1f", campsite.rating),
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
                     )

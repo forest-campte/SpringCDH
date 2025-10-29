@@ -13,6 +13,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.http.HttpMethod;
 
 import java.util.List;
 
@@ -43,7 +44,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/admins/signup", "/api/admins/login").permitAll()
                         .requestMatchers("/api/zones/**").authenticated()
+                        // (추가) 캠핑장 상세보기, 리뷰보기 (GET 요청)
+                        .requestMatchers(HttpMethod.GET, "/api/zones/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/reservations/make").authenticated()
                         .anyRequest().permitAll()
+//                        .anyRequest().authenticated()
                 )
 
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

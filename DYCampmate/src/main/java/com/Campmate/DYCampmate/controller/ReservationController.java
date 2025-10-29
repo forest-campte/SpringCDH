@@ -19,6 +19,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -144,18 +145,7 @@ public class ReservationController {
 //        return ResponseEntity.ok(reservations);
 //    }
 
-    /**
-     * 예약 생성 API
-     * POST("api/reservations/make")
-     */
-    @PostMapping("/make")
-    public ResponseEntity<Void> makeReservation(
-            @RequestHeader("Authorization") String token,
-            @RequestBody ReservationRequestDTO request
-    ) {
-        reservationService.makeReservation(token, request);
-        return ResponseEntity.ok().build(); // 프론트가 Response<Unit> 받음
-    }
+
 
     /**
      * 고객의 예약 목록 조회 API
@@ -175,4 +165,37 @@ public class ReservationController {
         reservationService.cancelReservation(id);
         return "예약이 취소되었습니다.";
     }
+
+
+
+    /**
+     * 예약 생성 API
+     * POST("api/reservations/make")
+     */
+//    @PostMapping("/make")
+//    public ResponseEntity<Void> makeReservation(
+//            @RequestHeader("Authorization") String token,
+//            @RequestBody ReservationRequestDTO request
+//    ) {
+//        reservationService.makeReservation(token, request);
+//        return ResponseEntity.ok().build(); // 프론트가 Response<Unit> 받음
+//    }
+    /**
+     * 예약 생성 API
+     * POST("api/reservations/make")
+     */
+    @PostMapping("make")
+    public ResponseEntity<Void> makeReservation(
+            @RequestBody ReservationRequestDTO request,
+            Principal principal // Spring Security가 authToken에서 사용자 정보(email/id)를 추출
+    ) {
+        // principal.getName()은 보통 사용자의 ID(email)를 반환
+        reservationService.makeReservation(request, principal.getName());
+
+        return ResponseEntity.ok().build(); // 성공 시 200 OK 반환
+    }
+
+
+
+
 }

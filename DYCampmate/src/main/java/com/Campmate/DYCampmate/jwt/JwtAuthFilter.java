@@ -2,11 +2,13 @@ package com.Campmate.DYCampmate.jwt;
 
 
 import com.Campmate.DYCampmate.JwtUtil;
+import com.Campmate.DYCampmate.config.CustomUserDetailsService;
 import com.Campmate.DYCampmate.repository.CustomerRepo;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import jakarta.servlet.FilterChain;
@@ -22,6 +24,7 @@ import java.util.Collections;
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
+    private final CustomUserDetailsService customUserDetailsService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -37,13 +40,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
                 // customerId를 사용하여 DB에서 사용자 정보를 조회합니다.
                 // 여기서는 간단히 User 객체를 생성하지만, UserDetails를 구현한 클래스를 사용하는 것이 더 좋습니다.
-                User user = new User(customerId, "", Collections.emptyList());
+                UserDetails userDetails = customUserDetailsService.loadUserByUsername(customerId);
 
                 // 1. 인증 객체 생성
                 Authentication authentication = new UsernamePasswordAuthenticationToken(
-                        user, // Principal (인증된 사용자 정보)
+                        userDetails, // Principal (인증된 사용자 정보)
                         null, // Credentials (비밀번호, 보통 null 처리)
-                        user.getAuthorities() // Authorities (권한 목록)
+                        userDetails.getAuthorities() // Authorities (권한 목록)
                 );
 
                 // 2. SecurityContextHolder에 인증 정보 저장
