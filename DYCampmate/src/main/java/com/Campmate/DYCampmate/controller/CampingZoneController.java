@@ -6,11 +6,14 @@ import com.Campmate.DYCampmate.repository.AdminRepo;
 import com.Campmate.DYCampmate.service.CampingZoneService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.util.List;
 
 @RestController
@@ -117,6 +120,39 @@ public class CampingZoneController {
         // 서비스 메서드에 AdminEntity, zoneId, DTO를 함께 전달
         CampingZoneDto updatedZone = campingZoneService.updateCampingZone(currentAdmin, id, requestDto);
         // -----------------------
+        return ResponseEntity.ok(updatedZone);
+    }
+
+    // === React용 (FormData + 파일) ===
+    @PostMapping(value = "/form-data", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ResponseEntity<CampingZoneDto> createZoneWithForm(
+            @ModelAttribute CampingZoneFormDto formDto, // ◀ 폼 DTO
+            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile // ◀ 파일
+    ) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long adminId = Long.parseLong(authentication.getName());
+        AdminEntity currentAdmin = adminRepository.findById(adminId)
+                .orElseThrow(() -> new UsernameNotFoundException("Admin not found with ID: " + adminId));
+
+        // 새 서비스 메서드 호출
+        CampingZoneDto createdZone = campingZoneService.createCampingZoneWithForm(currentAdmin, formDto, imageFile);
+        return new ResponseEntity<>(createdZone, HttpStatus.CREATED);
+    }
+
+    // === React용 (FormData + 파일) ===
+    @PutMapping(value = "/{id}/form-data", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ResponseEntity<CampingZoneDto> updateZoneWithForm(
+            @PathVariable Long id,
+            @ModelAttribute CampingZoneFormDto formDto, // ◀ 폼 DTO
+            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile // ◀ 파일
+    ) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long adminId = Long.parseLong(authentication.getName());
+        AdminEntity currentAdmin = adminRepository.findById(adminId)
+                .orElseThrow(() -> new UsernameNotFoundException("Admin not found with ID: " + adminId));
+
+        // 새 서비스 메서드 호출
+        CampingZoneDto updatedZone = campingZoneService.updateCampingZoneWithForm(currentAdmin, id, formDto, imageFile);
         return ResponseEntity.ok(updatedZone);
     }
 }

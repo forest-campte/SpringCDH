@@ -1,17 +1,15 @@
 package com.Campmate.DYCampmate.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Setter
+@NoArgsConstructor//(access = AccessLevel.PROTECTED)
 @Table(name = "camping_zones")
 public class CampingZone extends BaseTimeEntity {
 
@@ -72,17 +70,23 @@ public class CampingZone extends BaseTimeEntity {
         this.imageUrl = imageUrl;
     }
 
-    // 수정을 위한 메서드
-    public void update(String name, String description, Integer capacity, Integer price, String type, String defaultSize, String floor, boolean parking, boolean isActive, String imageUrl) { // update 메서드에 imageUrl 추가
+    /**
+     * ✅ [핵심] 서비스 레이어에서 호출할 엔티티 수정 메서드
+     * (기존 서비스 코드의 updateCampingZone 로직과 일치시킴)
+     */
+    public void update(String name, String description, int capacity, int price, String type, String defaultSize, String floor, boolean parking, boolean isActive, String imageUrl) {
         if (name != null) this.name = name;
         if (description != null) this.description = description;
-        if (capacity != null) this.capacity = capacity;
-        if (price != null) this.price = price;
+        this.capacity = capacity;
+        this.price = price;
         if (type != null) this.type = type;
         if (defaultSize != null) this.defaultSize = defaultSize;
         if (floor != null) this.floor = floor;
         this.parking = parking;
         this.isActive = isActive;
-        if (imageUrl != null) this.imageUrl = imageUrl;
+
+        // imageUrl이 null로 전달되면 기존 값을 유지하지 않고 null로 덮어쓰지 않도록 방어
+        // (파일이 없는 경우 updateCampingZone에서 기존 URL을 전달해줘야 함)
+        this.imageUrl = imageUrl;
     }
 }

@@ -48,6 +48,17 @@ public class JwtUtil {
                 .parseClaimsJws(token).getBody().getSubject();
     }
 
+    /**
+     * 토큰에서 모든 클레임(정보)을 추출합니다.
+     */
+    public Claims getClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);

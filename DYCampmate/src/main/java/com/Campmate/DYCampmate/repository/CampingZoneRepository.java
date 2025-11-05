@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CampingZoneRepository extends JpaRepository<CampingZone,Long> {
@@ -17,6 +18,8 @@ public interface CampingZoneRepository extends JpaRepository<CampingZone,Long> {
     List<CampingZone> findByAdmin(AdminEntity admin);
     List<CampingZone> findAllByAdmin_Id(Long adminId);
     List<CampingZone> findAllByAdmin(AdminEntity admin);
+    // 캠핑존 수정/삭제 시 소유권 확인을 위해
+    Optional<CampingZone> findByIdAndAdmin(Long id, AdminEntity admin);
     /**
      * 홈 화면에 보여줄 모든 캠핑존의 정보와 평균 평점을 조회하는 쿼리
      * JPQL Constructor Expression을 사용하여 즉시 DTO로 변환합니다.
