@@ -1,17 +1,20 @@
 package com.example.campmate.ui.detail
 
+import android.util.Log
 import android.util.Log.e
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.campmate.data.model.Campsite
 import com.example.campmate.data.model.CampsiteSite
-import com.example.campmate.data.model.ReservationRequest // ✅ ReservationRequest import
+import com.example.campmate.data.model.ReservationRequest
 import com.example.campmate.data.model.Review
 import com.example.campmate.data.remote.ApiService
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow // (추가)
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow // (추가)
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
@@ -22,7 +25,6 @@ import javax.inject.Inject
 @HiltViewModel
 class CampsiteDetailViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
-    // ❌ 임시 저장소(ReservationRepository) 삭제
     private val apiService: ApiService
 ) : ViewModel() {
 
@@ -32,23 +34,16 @@ class CampsiteDetailViewModel @Inject constructor(
     private val _reviews = MutableStateFlow<List<Review>>(emptyList())
     val reviews: StateFlow<List<Review>> = _reviews
 
-    /*
-
-    init {
-        // 1. Int로 받은 뒤 .toLong()으로 변환 (가장 안전한 방법) cdh1028
-        val campsiteId: Long = (savedStateHandle.get<Int>("campsiteId") ?: 0).toLong()
-        if (campsiteId != null) {
-            fetchCampsiteDetails(campsiteId)
-            fetchReviews(campsiteId)
-        }
-    }
-
-    1030cdh 로딩 및 에러 상태 */
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading
 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
+
+    // (추가) 1. 예약 결과를 Screen에 알리기 위한 '이벤트 채널'
+    private val _reservationResult = MutableSharedFlow<Boolean>()
+    val reservationResult = _reservationResult.asSharedFlow()
+
 
     init {
         val campsiteId: Long = (savedStateHandle.get<Int>("campsiteId") ?: 0).toLong()
@@ -60,15 +55,6 @@ class CampsiteDetailViewModel @Inject constructor(
         }
     }
 
-
-    /*
-    // (fetchCampsiteDetails, fetchReviews 함수는 이전과 동일)
-
-    private fun fetchCampsiteDetails(campsiteId: Long) { /* ... */ }
-    private fun fetchReviews(campsiteId: Long) { /* ... */ }
-
-    //
-    1030cdh fetch 두개를 동시에 관리하는 함수 */
     private fun fetchAllDetails(campsiteId: Long) {
         viewModelScope.launch {
             _isLoading.value = true
@@ -88,7 +74,7 @@ class CampsiteDetailViewModel @Inject constructor(
     // fetchCampsiteDetails 구현
     private suspend fun fetchCampsiteDetails(campsiteId: Long) {
 
-        val response = apiService.getCampsiteDetail(campsiteId) // 🚨 이 함수는 ApiService에 정의되어 있어야 함
+        val response = apiService.getCampsiteDetail(campsiteId)
         if (response.isSuccessful) {
             _campsite.value = response.body()
         } else {
@@ -98,8 +84,7 @@ class CampsiteDetailViewModel @Inject constructor(
 
     // fetchReviews 구현
     private suspend fun fetchReviews(campsiteId: Long) {
-        // (참고: ApiService에 getCampsiteReviews(id) 함수가 있다고 가정)
-        val response = apiService.getCampsiteReviews(campsiteId) // 🚨 이 함수는 ApiService에 정의되어 있어야 함
+        val response = apiService.getCampsiteReviews(campsiteId)
         if (response.isSuccessful) {
             _reviews.value = response.body() ?: emptyList()
         } else {
@@ -117,10 +102,11 @@ class CampsiteDetailViewModel @Inject constructor(
     }
 
     /**
-     * ✅ [수정됨] 임시 저장소 대신 실제 API를 호출하여 예약합니다.
+     * ✅ [수정됨] API를 호출하여 예약합니다.
      */
     fun makeReservation(
-        authToken: String, // ✅ (1) Activity/Fragment로부터 토큰 받기
+        // (수정) 2. AuthInterceptor가 토큰을 처리하므로, authToken 파라미터를 제거합니다.
+        // authToken: String,
         adults: Int,
         children: Int,
         startDate: Long,
@@ -130,36 +116,38 @@ class CampsiteDetailViewModel @Inject constructor(
         _campsite.value?.let { currentCampsite ->
             viewModelScope.launch {
                 try {
-                    //val zoneIdAsLong : Long
-                    //try{
-                    //    zoneIdAsLong = site.siteId.toLong()
-                    //}catch (e: NumberFormatException){
-                    //    e.printStackTrace()
-                    //    return@launch
-                    //}
-                    // 1. 서버로 보낼 '예약 요청' 데이터 상자 (수정됨)
+                    // (주석 제거)
+
+                    // 1. 서버로 보낼 '예약 요청' 데이터
                     val request = ReservationRequest(
-                        adminsId = currentCampsite.id.toLong(),
-                        campingZoneId = site.siteId,
+                        // (수정) 3. [중요] 캠핑장 ID가 아닌 관리자 ID를 전달해야 합니다.
+                        adminsId = currentCampsite.adminId,
+                        campingZoneId = site.siteId, // 🚨 CampsiteSite에 siteId가 있어야 함
                         checkIn = formatDate(startDate),
                         checkOut = formatDate(endDate),
-                        adults = adults,     // ✅ (2) 인원 정보 추가
-                        children = children  // ✅ (2) 인원 정보 추가
+                        adults = adults,
+                        children = children
                     )
 
-                    // 2. 실제 API 호출 (수정됨)
-                    // (ApiService에 추가한 함수 형식에 맞게 'token' 전달)
-                    val response = apiService.makeReservation(authToken, request) // ✅ (3) 토큰 전달
+                    // 2. 실제 API 호출
+                    // (수정) 4. 'authToken' 파라미터를 제거하고 'request'만 전달합니다.
+                    val response = apiService.makeReservation(request)
 
                     if (response.isSuccessful) {
-                        // TODO: 예약 성공 UI 처리 (예: 토스트 메시지, 화면 이동)
+                        Log.d("CampsiteDetailVM", "✅ 예약 성공")
+                        // (수정) 5. 성공 시 Screen에 'true' 이벤트 발행
+                        _reservationResult.emit(true)
                     } else {
-                        // TODO: 예약 실패 UI 처리 (예: "이미 예약된 날짜입니다" 토스트)
+                        Log.e("CampsiteDetailVM", "❌ 예약 실패: ${response.code()} ${response.message()}")
+                        // (수정) 6. 실패 시 Screen에 'false' 이벤트 발행
+                        _reservationResult.emit(false)
                     }
 
                 } catch (e: Exception) {
                     e.printStackTrace()
-                    // TODO: 예약 실패 시 에러 토스트 (네트워크 오류 등)
+                    Log.e("CampsiteDetailVM", "❌ 예약 중 네트워크 오류", e)
+                    // (수정) 6. 실패 시 Screen에 'false' 이벤트 발행
+                    _reservationResult.emit(false)
                 }
             }
         }

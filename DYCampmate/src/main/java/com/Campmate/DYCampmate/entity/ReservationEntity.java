@@ -70,4 +70,9 @@ public class ReservationEntity {
         E  // 완료
     }
 
+    // (추가) 상태 변경을 위한 비즈니스 메서드 (Setter 대신 사용)
+    public void cancel() {
+        this.status = ReservationStatus.C;
+    }
+
 }

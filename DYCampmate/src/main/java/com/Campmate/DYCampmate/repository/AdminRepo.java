@@ -1,5 +1,6 @@
 package com.Campmate.DYCampmate.repository;
 
+import com.Campmate.DYCampmate.dto.ZoneHomeViewDTO;
 import com.Campmate.DYCampmate.entity.AdminEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -26,5 +27,22 @@ public interface AdminRepo extends JpaRepository<AdminEntity, Long> {
                                          @Param("type") String type);
 
 
+    //1030km 어드민 웹 관련 수정
+    /**
+     * ✅ [이 쿼리 수정]
+     * 'AdminEntity'의 'campingZones' 필드와 정확히 일치하도록 수정합니다.
+     * (LEFT JOIN a.campingZones cz)
+     */
+    @Query("SELECT new com.Campmate.DYCampmate.dto.ZoneHomeViewDTO(" +
+            "a.id, a.name, a.description, a.imageUrl, " +
+            "CAST(COALESCE(AVG(r.rating), 0.0) AS double)) " +
+            "FROM AdminEntity a " +
+            // --- 이 부분을 'a.campingZones' (소문자 c, 복수형 s)로 수정 ---
+            "LEFT JOIN a.campingZones cz " +
+            // ---------------------------------------------------------
+            "LEFT JOIN cz.reviews r " +
+            "GROUP BY a.id, a.name, a.description, a.imageUrl " +
+            "ORDER BY a.name")
+    List<ZoneHomeViewDTO> findAllAsCampsiteList();
 
 }

@@ -6,7 +6,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack // (참고) 중복 import지만 컴파일에 영향 없음
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DateRangePicker
@@ -20,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect // (추가)
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,6 +47,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.TextButton
+import kotlinx.coroutines.flow.collectLatest // (추가)
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -59,30 +61,41 @@ fun CampsiteDetailScreen(
     // --- 상태 변수 정의 ---
     val campsite by viewModel.campsite.collectAsState()
     val reviews by viewModel.reviews.collectAsState()
-    //1030cdh
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
     val context = LocalContext.current
 
-    // ✅ [추가] 에러 방지를 위해 누락된 상태 변수들 정의
-    // (이 변수들은 UI 어딘가에서 사용되고 있을 것입니다)
     var adultCount by remember { mutableStateOf(1) }
     var childCount by remember { mutableStateOf(0) }
     var selectedSite by remember { mutableStateOf<CampsiteSite?>(null) }
 
     val datePickerState = rememberDateRangePickerState()
-    // DatePickerDialog 표시 여부 상태
     var showDatePickerDialog by remember { mutableStateOf(false) }
-    // 날짜 포맷 함수 (선택된 날짜 표시용)
     val dateFormatter = remember { SimpleDateFormat("yyyy.MM.dd", Locale.getDefault()) }
+
+    // (추가) 1. ViewModel의 예약 결과를 구독(observe)
+    LaunchedEffect(Unit) {
+        viewModel.reservationResult.collectLatest { success ->
+            if (success) {
+                // 2. 예약 성공 시 토스트 + 화면 이동
+                val message = context.getString(R.string.reservation_complete_message)
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                onNavigateUp()
+            } else {
+                // 3. 예약 실패 시 (네트워크 오류, 서버 500 에러 등)
+                val message = "예약에 실패했습니다. 다시 시도해주세요."
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
 
     Scaffold(
         topBar = {
-            // (예시) TopBar - 본인의 TopBar Composable로 교체하세요
             TopAppBar(title = { Text(campsite?.name ?: "상세보기") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateUp) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "뒤로가기")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "뒤로가기") // (수정) AutoMirrored로 변경
                     }
                 }
             )
@@ -90,19 +103,13 @@ fun CampsiteDetailScreen(
         bottomBar = {
             Button(
                 onClick = {
-                    // ✅ [수정] datePickerState에서 날짜 가져오기
                     val startDate = datePickerState.selectedStartDateMillis
                     val endDate = datePickerState.selectedEndDateMillis
 
-                    // ✅ [수정] 실제 토큰 가져오기 (임시값)
-                    // 이 부분은 SharedPreferences나 DataStore에서 가져와야 합니다.
-                    val authToken = "Bearer YOUR_ACTUAL_TOKEN" // 👈 [수정필요]
-
                     if (startDate != null && endDate != null && selectedSite != null) {
 
-                        // ✅ [수정] ViewModel 호출 시 authToken 포함
+                        // (수정) 4. ViewModel 함수 호출만 실행 (토스트, onNavigateUp 모두 제거)
                         viewModel.makeReservation(
-                            authToken,
                             adultCount,
                             childCount,
                             startDate,
@@ -110,9 +117,10 @@ fun CampsiteDetailScreen(
                             selectedSite!!
                         )
 
-                        val message = context.getString(R.string.reservation_complete_message)
-                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                        onNavigateUp()
+                        // (삭제)
+                        // val message = context.getString(R.string.reservation_complete_message)
+                        // Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                        // onNavigateUp()
                     } else {
                         val message = context.getString(R.string.please_select_date_and_site)
                         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
@@ -127,20 +135,6 @@ fun CampsiteDetailScreen(
             }
         }
     ) { paddingValues ->
-        /*
-        // ✅ [수정] paddingValues를 Column의 Modifier에 적용
-        Column(
-            modifier = Modifier
-                .padding(paddingValues)
-                .padding(16.dp) // (선택) 컨텐츠 영역의 추가 패딩
-        ) {
-            // --- 본문의 UI Composable ---
-            // (예: CampsiteDetailContent, SiteItem, GuestCounter 등)
-            // ...
-            Text("캠핑장 상세 정보 UI가 여기에 표시됩니다.")
-            // ...
-        }
-        1030cdh UI 추가 */
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -161,7 +155,6 @@ fun CampsiteDetailScreen(
                 }
                 campsite != null -> {
                     // --- 성공: 데이터 표시 ---
-                    // LazyColumn 대신 Column + verticalScroll 사용 (중첩 스크롤 방지)
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
@@ -281,7 +274,6 @@ fun CampsiteDetailScreen(
             }
         }
     }
-    // 1030cdh 날씨선택
     // DatePickerDialog 컴포저블
     if (showDatePickerDialog) {
         DatePickerDialog(

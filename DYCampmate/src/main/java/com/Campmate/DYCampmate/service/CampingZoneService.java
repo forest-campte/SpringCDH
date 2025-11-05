@@ -16,6 +16,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+// 로깅 import (홈 화면 디버깅용으로 유지)
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
@@ -26,9 +30,11 @@ public class CampingZoneService {
     private final AdminRepo adminRepository;
     private final ReviewRepo reviewRepository;
 
+    private static final Logger logger = LoggerFactory.getLogger(CampingZoneService.class);
 
-    // 로그인 시
-    // 관리자 기준 캠핑존 조회
+    /**
+     * ✅ [이 메소드 추가됨 - 컨트롤러 에러 해결용]
+     */
     public List<CampingZoneDto> getZonesForAdmin(AdminEntity admin) {
         return campingZoneRepository.findByAdmin(admin)
                 .stream()
@@ -36,47 +42,27 @@ public class CampingZoneService {
                 .collect(Collectors.toList());
     }
 
-    // 전체 캠핑존 조회 (홈 화면용)
-//    public List<ZoneHomeViewDTO> getAllCampingZonesWithRating() {
-//        return campingZoneRepository.findAllWithAverageRating_Original();
-//    }
     /**
      * 캠핑존을 관리자(Admin)별로 그룹화하여 조회합니다.
      */
     public List<AdminZoneGroupDTO> getZonesGroupedByAdmin() {
-
-        // 1. Repository에서 Admin 정보가 포함된 Zone 리스트 조회
-        List<ZoneAdminRatingDTO> allZones = campingZoneRepository.findAllWithAdminAndAverageRating();
-
-        // 2. Admin ID를 기준으로 맵(Map) 생성 (데이터 그룹화)
-        // Key: Admin ID, Value: 해당 Admin에 속한 Zone(DTO) 리스트
-        Map<Long, List<ZoneAdminRatingDTO>> zonesGroupedByAdminId = allZones.stream()
-                .collect(Collectors.groupingBy(ZoneAdminRatingDTO::adminId));
-
-        // 3. 맵을 최종 응답 DTO(AdminZoneGroupDTO) 리스트로 변환
-        return zonesGroupedByAdminId.entrySet().stream()
-                .map(entry -> {
-                    // (entry.getValue()는 List<ZoneAdminRatingDTO> 임)
-
-                    // 3-1. 이 그룹의 Admin 이름 가져오기 (리스트의 첫 번째 요소에서)
-                    String adminName = entry.getValue().get(0).adminName();
-
-                    // 3-2. Zone 리스트를 원본 DTO(ZoneHomeViewDTO) 리스트로 변환
-                    List<ZoneHomeViewDTO> sites = entry.getValue().stream()
-                            .map(ZoneAdminRatingDTO::toZoneHomeViewDTO) // 헬퍼 메서드 사용
-                            .collect(Collectors.toList());
-
-                    // 3-3. 최종 DTO 빌드
-                    return AdminZoneGroupDTO.builder()
-                            .name(adminName)
-                            .sites(sites)
-                            .build();
-                })
-                .collect(Collectors.toList());
+        try {
+            List<ZoneHomeViewDTO> campsiteList = adminRepository.findAllAsCampsiteList();
+            AdminZoneGroupDTO singleGroup = AdminZoneGroupDTO.builder()
+                    .name("전체 캠핑장")
+                    .sites(campsiteList)
+                    .build();
+            return Collections.singletonList(singleGroup);
+        } catch (Exception e) {
+            logger.error("!!! getZonesGroupedByAdmin 수행 중 에러 발생 !!!", e);
+            throw new RuntimeException("getZonesGroupedByAdmin 서비스 로직 실패", e);
+        }
     }
 
     /**
-     * 캠핑존 상세 정보 조회
+     * ✅ [수정]
+     * 캠핑존 상세 정보 조회 (수정 전 원본 로직)
+     * reviewCount, admin 등을 DTO로 전달하지 않습니다.
      */
     public CampsiteDetailDTO getCampsiteDetail(Long campsiteId) {
         CampingZone mainZone = campingZoneRepository.findById(campsiteId)
@@ -84,15 +70,25 @@ public class CampingZoneService {
 
         AdminEntity admin = mainZone.getAdmin();
 
-        List<CampingZone> allSitesFromAdmin = campingZoneRepository.findAllByAdmin(admin);
-
-        List<CampsiteSiteDTO> siteDTOs = allSitesFromAdmin.stream()
-                .map(CampsiteSiteDTO::fromEntity)
-                .collect(Collectors.toList());
+        // [수정] admin이 null일 경우를 대비한 방어 코드
+        List<CampsiteSiteDTO> siteDTOs;
+        if (admin != null) {
+            List<CampingZone> allSitesFromAdmin = campingZoneRepository.findAllByAdmin(admin);
+            siteDTOs = allSitesFromAdmin.stream()
+                    .map(CampsiteSiteDTO::fromEntity)
+                    .collect(Collectors.toList());
+        } else {
+            siteDTOs = Collections.emptyList();
+        }
 
         Double averageRating = reviewRepository.findAverageRatingByCampingZoneId(campsiteId);
 
-        return CampsiteDetailDTO.fromEntity(mainZone, averageRating, siteDTOs);
+        // ✅ [수정] 원본 DTO의 fromEntity 메소드 호출
+        return CampsiteDetailDTO.fromEntity(
+                mainZone,
+                averageRating,
+                siteDTOs
+        );
     }
 
     /**
@@ -154,3 +150,18 @@ public class CampingZoneService {
         return CampingZoneDto.from(campingZone);
     }
 }
+
+
+// 로그인 시
+// 관리자 기준 캠핑존 조회
+//    public List<CampingZoneDto> getZonesForAdmin(AdminEntity admin) {
+//        return campingZoneRepository.findByAdmin(admin)
+//                .stream()
+//                .map(CampingZoneDto::from)
+//                .collect(Collectors.toList());
+//    }
+
+// 전체 캠핑존 조회 (홈 화면용)
+//    public List<ZoneHomeViewDTO> getAllCampingZonesWithRating() {
+//        return campingZoneRepository.findAllWithAverageRating_Original();
+//    }

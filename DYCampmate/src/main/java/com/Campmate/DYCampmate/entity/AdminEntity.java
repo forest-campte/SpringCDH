@@ -6,6 +6,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Entity
@@ -53,6 +54,21 @@ public class AdminEntity {
 
     @Column(name = "create_dt")
     private LocalDateTime createDt;
+
+    /**
+     * ✅ [추가]
+     * CampsiteDetailDTO에 관리자 전화번호를 제공하기 위한 필드
+     * (DB에는 'phone_number' 컬럼으로 저장된다고 가정)
+     */
+    @Column(name = "phone_number", length = 50)
+    private String phoneNumber;
+
+    /**
+     * Admin(1)이 여러 CampingZone(N)을 가짐
+     * 'mappedBy = "admin"'는 CampingZone 엔티티에 'admin'이라는 필드가 있음을 의미합니다.
+     */
+    @OneToMany(mappedBy = "admin", fetch = FetchType.LAZY)
+    private List<CampingZone> campingZones;
 
 
     public void update(String email, String name, String description, String campingStyle, String campingBackground, String campingType, String address, String imageUrl) {

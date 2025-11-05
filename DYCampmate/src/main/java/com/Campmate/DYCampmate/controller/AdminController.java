@@ -23,10 +23,5 @@ public class AdminController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-//    public AdminController(AdminService adminService) {
-//        this.adminService = adminService;
-//    }@RequiredArgsConstructor Annotation 으로 대체
-
-
 
 }

@@ -19,7 +19,7 @@ import com.example.campmate.ui.detail.CampsiteDetailScreen
 import com.example.campmate.ui.mypage.MyReviewsScreen
 import com.example.campmate.ui.review.WriteReviewScreen
 import com.example.campmate.ui.search.SearchScreen
-import com.example.campmate.ui.theme.CampMateTheme
+import com.example.campmate.ui.theme.CampmateTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -35,7 +35,7 @@ class MainActivity : ComponentActivity() {
         val startDestination = if (tokenManager.getToken() != null) "main" else "login"
 
         setContent {
-            CampMateTheme {
+            CampmateTheme {
                 Surface(color = MaterialTheme.colorScheme.background) {
                     CampMateAppNavHost(startDestination = startDestination)
                 }

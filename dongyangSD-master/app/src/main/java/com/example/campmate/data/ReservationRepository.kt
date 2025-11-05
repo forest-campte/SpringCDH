@@ -1,8 +1,11 @@
 package com.example.campmate.data
 
+import android.util.Log
 import com.example.campmate.data.model.Campsite
 import com.example.campmate.data.model.Reservation
+import com.example.campmate.data.model.ReservationRequest
 import com.example.campmate.data.model.Review
+import com.example.campmate.data.remote.ApiService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -13,23 +16,71 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class ReservationRepository @Inject constructor() {
+class ReservationRepository @Inject constructor(
+    private val apiService: ApiService // (수정) API 서비스 주입
+) {
 
     // --- 예약 관련 ---
     private val _reservations = MutableStateFlow<List<Reservation>>(emptyList())
     val reservations = _reservations.asStateFlow()
 
-    fun addReservation(campsite: Campsite, adults: Int, children: Int, startDateMillis: Long, endDateMillis: Long, siteName: String) {
-        val newReservation = Reservation(
-            reservationId = "CM${System.currentTimeMillis()}",
-            campsite = campsite,
-            checkInDate = formatDate(startDateMillis),
-            checkOutDate = formatDate(endDateMillis),
+    /**
+     * (수정) API를 호출하여 서버에 예약을 생성하는 함수 (suspend 함수로 변경)
+     */
+    suspend fun addReservation(campsite: Campsite, adults: Int, children: Int, startDateMillis: Long, endDateMillis: Long, siteName: String) {
+
+        // 1. (추가) 서버에 보낼 DTO 생성
+        // 🚨 중요: 백엔드(ReservationRequestDTO.java)는 adminsId를 요구합니다.
+        // Campsite 데이터 클래스에 adminId 필드가 없다면 이 부분은 컴파일 에러가 발생합니다.
+        // campsite.adminId 또는 다른 경로로 adminId를 가져와야 합니다.
+        val request = ReservationRequest(
+            campingZoneId = campsite.id,
+            adminsId = campsite.adminId, // 🚨 이 필드를 campsite 모델에서 가져올 수 있어야 함
+            checkIn = formatDate(startDateMillis),
+            checkOut = formatDate(endDateMillis),
             adults = adults,
-            children = children,
-            selectedSiteName = siteName
+            children = children
+            // siteName 등 DTO에 필요한 다른 필드가 있다면 추가
         )
-        _reservations.update { currentList -> currentList + newReservation }
+
+        try {
+            // 2. (추가) API 호출 (AuthInterceptor가 헤더를 자동으로 추가해 줌)
+            val response = apiService.makeReservation(request)
+
+            if (response.isSuccessful) {
+                Log.d("ReservationRepo", "✅ 예약 성공")
+                // 3. (추가) 예약 성공 시, 나의 예약 목록을 새로고침
+                // TODO: 1L 대신 실제 로그인된 customerId를 DataStore 등에서 가져와야 함
+                fetchMyReservations(1L)
+            } else {
+                Log.e("ReservationRepo", "❌ 예약 실패: ${response.code()} ${response.message()}")
+            }
+        } catch (e: Exception) {
+            Log.e("ReservationRepo", "❌ 예약 중 네트워크 오류", e)
+        }
+
+        // (수정) 로컬에만 추가하던 코드는 삭제 (이제 서버 응답을 사용)
+        // _reservations.update { currentList -> currentList + newReservation }
+    }
+
+    /**
+     * (추가) 서버에서 "나의 예약 목록"을 불러오는 함수
+     */
+    suspend fun fetchMyReservations(customerId: Long) {
+        try {
+            val response = apiService.getMyReservations(customerId)
+            if (response.isSuccessful) {
+                // 3. 성공 시 StateFlow 업데이트
+                _reservations.value = response.body() ?: emptyList()
+                Log.d("ReservationRepo", "✅ 예약 목록 로드 성공: ${response.body()?.size}개")
+            } else {
+                Log.e("ReservationRepo", "❌ 예약 목록 로드 실패: ${response.code()}")
+                _reservations.value = emptyList() // 실패 시 비워줌
+            }
+        } catch (e: Exception) {
+            Log.e("ReservationRepo", "❌ 예약 목록 로드 중 네트워크 오류", e)
+            _reservations.value = emptyList() // 실패 시 비워줌
+        }
     }
 
     private fun formatDate(millis: Long): String {
@@ -49,7 +100,6 @@ class ReservationRepository @Inject constructor() {
             authorName = "나", // 지금은 작성자를 '나'로 고정
             rating = rating,
             content = content,
-            // ✅✅✅ [수정됨] 빠져있던 파라미터들을 추가합니다. ✅✅✅
             imageUrls = emptyList(), // 이미지 URL은 비어있는 리스트로 전달
             createdAt = formatDate(System.currentTimeMillis()) // 현재 시간을 날짜 문자열로 변환하여 전달
         )

@@ -33,11 +33,18 @@ public class ReservationController {
     // 로그인한 Admin 아이디를 가져와서 조회함.
     @GetMapping
     public ResponseEntity<List<ReservationDTO>> getMyReservations(@AuthenticationPrincipal User user) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // 📝 HttpStatus import 확인
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        if (authentication == null || !authentication.isAuthenticated()) {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // 📝 HttpStatus import 확인
+//        }
+        // (수정) SecurityContextHolder에서 다시 꺼낼 필요 없이 주입받은 user 객체 사용
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        Long adminId = Long.parseLong(authentication.getName());
+
+//        Long adminId = Long.parseLong(authentication.getName());
+        // user.getUsername()이 Admin ID를 반환한다고 가정
+        Long adminId = Long.parseLong(user.getUsername());
 
         // --- [핵심 수정 1] ---
         // adminId로 AdminEntity 조회
@@ -86,19 +93,21 @@ public class ReservationController {
     @GetMapping("/admin/{adminId}/status")
     public ResponseEntity<List<ReservationDTO>> getReservationsByAdminAndStatus(
             @PathVariable Long adminId,
-            @RequestParam("status") List<ReservationEntity.ReservationStatus> status) { // String 대신 Enum 타입으로 직접 받도록 변경
+//            @RequestParam("status") List<ReservationEntity.ReservationStatus> status) { // String 대신 Enum 타입으로 직접 받도록 변경
+            // (수정) List -> 단일 Enum. 여러 개를 받으려 했으나 서비스가 단일 처리만 함.
+            @RequestParam("status") ReservationEntity.ReservationStatus status) {
 
         // adminId로 AdminEntity 조회
         AdminEntity admin = adminRepository.findById(adminId)
                 .orElseThrow(() -> new UsernameNotFoundException("Admin not found with ID: " + adminId));
 
         // 서비스 메서드 확인 및 호출
-        if (status == null || status.isEmpty()) {
+        if (status == null ) {
             return ResponseEntity.badRequest().body(null);
         }
         // --- [핵심 수정 3] ---
         // 서비스 메서드 이름과 파라미터 확인 (단일 상태 조회)
-        List<ReservationDTO> reservations = reservationService.getReservationsByStatus(admin, status.get(0));
+        List<ReservationDTO> reservations = reservationService.getReservationsByStatus(admin, status);
         // -----------------------
 
 
@@ -125,33 +134,13 @@ public class ReservationController {
         return ResponseEntity.ok(reservations);
     }
 
-//    @PostMapping("/make")
-//    public ResponseEntity<Void> makeReservation(
-//            @RequestHeader("Authorization") String token,
-//            @RequestBody ReservationDTO request) {
-//
-//        reservationService.createReservation(request);
-//
-////        return ResponseEntity.ok().build();
-//    }
-
-//    @GetMapping("/{customerId}")
-//    public ResponseEntity<List<Reservation>> getMyReservations(
-//            @PathVariable("customerId") Long customerId) {
-//
-//        List<ReservationEntity> reservations = reservationService.getReservationsByCustomerId(customerId);
-//
-//        // 조회된 예약 목록과 200 OK 상태 코드를 반환합니다.
-//        return ResponseEntity.ok(reservations);
-//    }
-
 
 
     /**
      * 고객의 예약 목록 조회 API
      * GET("api/reservations/{customerId}")
      */
-    @GetMapping("/{customerId}")
+    @GetMapping("/customer/{customerId}")
     public ResponseEntity<List<ReservationResponseDTO>> getMyReservations(
             @PathVariable Long customerId
     ) {
@@ -167,19 +156,6 @@ public class ReservationController {
     }
 
 
-
-    /**
-     * 예약 생성 API
-     * POST("api/reservations/make")
-     */
-//    @PostMapping("/make")
-//    public ResponseEntity<Void> makeReservation(
-//            @RequestHeader("Authorization") String token,
-//            @RequestBody ReservationRequestDTO request
-//    ) {
-//        reservationService.makeReservation(token, request);
-//        return ResponseEntity.ok().build(); // 프론트가 Response<Unit> 받음
-//    }
     /**
      * 예약 생성 API
      * POST("api/reservations/make")

@@ -63,19 +63,18 @@ interface ApiService {
 
     /**
      * 새로운 예약을 생성합니다.
-     * (customer/login 과 경로 패턴을 맞추기 위해 "customer/reservations"로 가정)
-     *
-     * @Header token: 로그인 시 발급받은 인증 토큰
-     * @Body request: 예약에 필요한 정보 (ReservationRequest)
-     * @return Response<Unit> (회원가입처럼 성공 여부만 받음)
      */
-    @POST("api/reservations/make") // 👈 백엔드 팀과 실제 엔드포인트 확인! -> cdh1028 확인
+    @POST("api/reservations/make")
     suspend fun makeReservation(
-        @Header("Authorization") token: String,
+        // (수정) AuthInterceptor가 토큰을 자동으로 헤더에 넣어주므로,
+        // 수동으로 받던 @Header 파라미터를 제거해야 403 에러가 해결됩니다.
+        // @Header("Authorization") token: String,
         @Body request: ReservationRequest
-    ): Response<Unit> // 백엔드가 예약 성공 시 데이터를 준다면 Unit 대신 DTO로 변경
+    ): Response<Unit>
 
-    @GET("api/reservations/{custimerId}")
+    // (수정) 백엔드 Controller 및 SecurityConfig와 경로를 일치시킵니다.
+    // (기존: "api/reservations/{custimerId}")
+    @GET("api/reservations/customer/{customerId}")
     suspend fun getMyReservations(
         @Path("customerId") customerId: Long
     ): Response<List<Reservation>>
@@ -88,24 +87,3 @@ interface ApiService {
 
 }
 
-
-
-
-
-
-/* 중복 주석 처리 : cdh1028
-    @GET("checklist/{customerId}")
-    suspend fun getMyChecklist(@Path("customerId") customerId: Long): Response<List<ChecklistItem>>
-
-    @GET("checklist/presets")
-    suspend fun getChecklistPresets(): Response<Map<String, List<String>>>
-
-    @POST("checklist/{customerId}")
-    suspend fun addChecklistItem(@Path("customerId") customerId: Long, @Body body: Map<String, String>): Response<ChecklistItem>
-
-    @PUT("checklist/{itemId}")
-    suspend fun updateChecklistItem(@Path("itemId") itemId: Long, @Body body: Map<String, Boolean>): Response<ChecklistItem>
-
-    @DELETE("checklist/{itemId}")
-    suspend fun deleteChecklistItem(@Path("itemId") itemId: Long): Response<Unit>
-    */

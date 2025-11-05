@@ -13,7 +13,8 @@ public record CampsiteDetailDTO(
         String description,
         String imageUrl,
         Double rating, // 리뷰 평균 평점
-        List<CampsiteSiteDTO> sites // 같은 관리자의 다른 모든 사이트 목록
+        List<CampsiteSiteDTO> sites, // 같은 관리자의 다른 모든 사이트 목록
+        Long adminId // (추가) 안드로이드 앱에서 예약을 위해 필요한 관리자 ID
 ) {
     // 엔티티와 계산된 평점, 사이트 리스트를 조합해 DTO 생성
     public static CampsiteDetailDTO fromEntity(CampingZone zone, Double rating, List<CampsiteSiteDTO> sites) {
@@ -24,6 +25,8 @@ public record CampsiteDetailDTO(
                 .imageUrl(zone.getImageUrl())
                 .rating(rating)
                 .sites(sites)
+                // (추가) CampingZone 엔티티에서 Admin 엔티티를 거쳐 ID를 가져옴
+                .adminId(zone.getAdmin().getId())
                 .build();
     }
 }

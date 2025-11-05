@@ -204,23 +204,23 @@ public class ReservationService {
     /**
      * ReservationRequestDTO → Entity 변환
      */
-    private ReservationEntity toEntity(
-            ReservationRequestDTO request,
-            CustomerEntity customer,
-            AdminEntity admin,
-            CampingZone zone
-    ) {
-        return ReservationEntity.builder()
-                .customer(customer)
-                .admin(admin)
-                .campingZone(zone)
-                .checkIn(LocalDate.parse(request.getCheckIn()))
-                .checkOut(LocalDate.parse(request.getCheckOut()))
-                .adults(request.getAdults() != null ? request.getAdults() : 0)
-                .children(request.getChildren())
-                .status(ReservationEntity.ReservationStatus.R)
-                .build();
-    }
+//    private ReservationEntity toEntity(
+//            ReservationRequestDTO request,
+//            CustomerEntity customer,
+//            AdminEntity admin,
+//            CampingZone zone
+//    ) {
+//        return ReservationEntity.builder()
+//                .customer(customer)
+//                .admin(admin)
+//                .campingZone(zone)
+//                .checkIn(LocalDate.parse(request.getCheckIn()))
+//                .checkOut(LocalDate.parse(request.getCheckOut()))
+//                .adults(request.getAdults() != null ? request.getAdults() : 0)
+//                .children(request.getChildren())
+//                .status(ReservationEntity.ReservationStatus.R)
+//                .build();
+//    }
 //매퍼 제거
 //    /**
 //     * 특정 관리자(Admin)의 모든 예약을 조회하는 메서드

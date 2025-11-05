@@ -7,24 +7,18 @@ import com.google.gson.annotations.SerializedName
  * 안드로이드 앱이 백엔드로 보내는 요청(Request) 데이터 모델
  */
 data class ReservationRequest(
-    // DB의 admins_id 컬럼과 매칭
+    @SerializedName("campingZoneId") // 백엔드의 ReservationRequestDTO.java 필드명과 일치
+    val campingZoneId: Long,
+
     @SerializedName("adminsId")
     val adminsId: Long,
 
-    // DB의 camping_zone_id 컬럼과 매칭
-    @SerializedName("campingZoneId")
-    val campingZoneId: String,
-
-    // DB의 check_in 컬럼과 매칭 (YYYY-MM-DD 형식)
     @SerializedName("checkIn")
-    val checkIn: String,
+    val checkIn: String, // "yyyy-MM-dd" 형식
 
-    // DB의 check_out 컬럼과 매칭 (YYYY-MM-DD 형식)
     @SerializedName("checkOut")
-    val checkOut: String,
+    val checkOut: String, // "yyyy-MM-dd" 형식
 
-    // ✅ [추가] ViewModel에서 수집하는 인원 정보
-    // (DB 테이블에도 이 컬럼들이 필요하다고 백엔드 팀에 알려야 합니다)
     @SerializedName("adults")
     val adults: Int,
 
