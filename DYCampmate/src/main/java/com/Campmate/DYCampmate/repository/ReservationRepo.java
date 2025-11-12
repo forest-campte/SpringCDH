@@ -76,4 +76,10 @@ public interface ReservationRepo extends JpaRepository<ReservationEntity, Long> 
     List<ReservationEntity> findByAdmin(AdminEntity admin);
     List<ReservationEntity> findByCampingZone(CampingZone zone);
     List<ReservationEntity> findByCustomer_Id(Long customerId);
+
+    /**
+     * === [캠핑존 삭제를 위해 추가] ===
+     * 특정 캠핑존(부모)에 속한 모든 예약(자식)을 삭제합니다.
+     */
+    void deleteAllByCampingZone(CampingZone campingZone);
 }

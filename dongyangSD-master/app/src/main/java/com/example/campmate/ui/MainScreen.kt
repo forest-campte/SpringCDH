@@ -45,7 +45,7 @@ fun MainScreen(
     onNavigateToDetail: (Long) -> Unit,
     onNavigateToSearch: () -> Unit,
     onNavigateToMyReviews: () -> Unit,
-    onNavigateToWriteReview: (Long, String) -> Unit,
+    onNavigateToWriteReview: (Long, Int, String) -> Unit,
     onLogout: () -> Unit
 ) {
     val navController = rememberNavController()
@@ -167,7 +167,7 @@ fun NavigationGraph(
     onNavigateToDetail: (Long) -> Unit,
     onNavigateToSearch: () -> Unit,
     onNavigateToMyReviews: () -> Unit,
-    onNavigateToWriteReview: (Long, String) -> Unit,
+    onNavigateToWriteReview: (Long, Int, String) -> Unit,
     onLogout: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -194,7 +194,11 @@ fun NavigationGraph(
         }
         composable("reservation_list") {
             ReservationListScreen(
-                onNavigateToWriteReview = onNavigateToWriteReview,
+                //25.11.10 KM수정 리뷰
+                //onNavigateToWriteReview = onNavigateToWriteReview,
+                onNavigateToWriteReview = { reservationId, campsiteId, campsiteName ->
+                    onNavigateToWriteReview( reservationId, campsiteId, campsiteName)
+                },
                 onNavigateUp = { mainNavController.popBackStack() }
             )
         }

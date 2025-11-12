@@ -23,6 +23,7 @@ interface ApiService {
     @GET("api/zones/{id}")
     suspend fun getCampsiteDetail(@Path("id") campsiteId: Long): Response<Campsite>
 
+    //11.10 수정 KM
     // --- 리뷰 ---
     @POST("reviews/submit") // 수정: cdh1028
     suspend fun submitReview(@Body reviewRequest: ReviewRequest): Response<Unit>
@@ -86,4 +87,3 @@ interface ApiService {
     ): List<WeatherResponse>
 
 }
-

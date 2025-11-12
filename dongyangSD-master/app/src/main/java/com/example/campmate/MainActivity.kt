@@ -70,8 +70,9 @@ fun CampMateAppNavHost(startDestination: String) {
                 onNavigateToMyReviews = {
                     navController.navigate("my_reviews")
                 },
-                onNavigateToWriteReview = { campsiteId, campsiteName ->
-                    navController.navigate("write_review/$campsiteId/$campsiteName")
+                //11.10 KM 수정 리뷰
+                onNavigateToWriteReview = { reservationId: Long, campsiteId: Int, campsiteName: String ->
+                    navController.navigate("write_review/$reservationId/$campsiteId/$campsiteName")
                 },
                 onLogout = {
                     navController.navigate("login") {
@@ -95,15 +96,18 @@ fun CampMateAppNavHost(startDestination: String) {
             )
         }
         composable(
-            route = "write_review/{campsiteId}/{campsiteName}",
+            route = "write_review/{reservationId}/{campsiteId}/{campsiteName}",
             arguments = listOf(
+                navArgument("reservationId") { type = NavType.LongType },
                 navArgument("campsiteId") { type = NavType.IntType },
                 navArgument("campsiteName") { type = NavType.StringType }
             )
         ) { backStackEntry ->
+            val resId = backStackEntry.arguments?.getLong("reservationId") ?: 0L
             val id = backStackEntry.arguments?.getInt("campsiteId") ?: 0
             val name = backStackEntry.arguments?.getString("campsiteName") ?: ""
             WriteReviewScreen(
+                reservationId = resId,
                 campsiteId = id,
                 campsiteName = name,
                 onNavigateUp = { navController.popBackStack() }

@@ -7,6 +7,7 @@ import com.Campmate.DYCampmate.entity.AdminEntity;
 import com.Campmate.DYCampmate.entity.CampingZone;
 import com.Campmate.DYCampmate.repository.AdminRepo;
 import com.Campmate.DYCampmate.repository.CampingZoneRepository;
+import com.Campmate.DYCampmate.repository.ReservationRepo;
 import com.Campmate.DYCampmate.repository.ReviewRepo;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ public class CampingZoneService {
     private final CampingZoneRepository campingZoneRepository;
     private final AdminRepo adminRepository;
     private final ReviewRepo reviewRepository;
+    private final ReservationRepo reservationRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(CampingZoneService.class);
     private final FileStorageService fileStorageService;
@@ -228,6 +230,37 @@ public class CampingZoneService {
         );
 
         return CampingZoneDto.from(campingZone);
+    }
+
+    /**
+     * === 캠핑존 삭제 (소유권 확인 및 S3 파일 삭제 포함) ===
+     *
+     * @param adminId 현재 로그인된 관리자 ID
+     * @param zoneId 삭제할 캠핑존 ID
+     */
+    @Transactional // (readOnly = true 아님!)
+    public void deleteCampingZone(Long adminId, Long zoneId) {
+
+        // 1. 캠핑존 조회
+        CampingZone campingZone = campingZoneRepository.findById(zoneId)
+                .orElseThrow(() -> new EntityNotFoundException("CampingZone not found with id: " + zoneId));
+
+        // 2. 소유권 확인
+        if (!campingZone.getAdmin().getId().equals(adminId)) {
+            throw new SecurityException("삭제할 권한이 없습니다.");
+        }
+
+        // 3. 자식 데이터(리뷰, 예약) 먼저 삭제
+        reviewRepository.deleteAllByCampingZone(campingZone);
+        reservationRepository.deleteAllByCampingZone(campingZone);
+
+        // 4. S3에 업로드된 이미지 파일 삭제
+        if (campingZone.getImageUrl() != null && !campingZone.getImageUrl().isEmpty()) {
+            fileStorageService.deleteFile(campingZone.getImageUrl());
+        }
+
+        // 5. 캠핑존 DB에서 삭제
+        campingZoneRepository.delete(campingZone);
     }
 
 }

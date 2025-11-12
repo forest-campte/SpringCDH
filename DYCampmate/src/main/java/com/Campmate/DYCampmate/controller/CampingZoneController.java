@@ -155,4 +155,22 @@ public class CampingZoneController {
         CampingZoneDto updatedZone = campingZoneService.updateCampingZoneWithForm(currentAdmin, id, formDto, imageFile);
         return ResponseEntity.ok(updatedZone);
     }
+
+    /**
+     * === 캠핑존 삭제 (DELETE /api/zones/{id}) ===
+     * * @param id 삭제할 캠핑존의 ID
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteZone(@PathVariable Long id) {
+
+        // 1. 현재 인증된 Admin의 ID 가져오기
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long adminId = Long.parseLong(authentication.getName());
+
+        // 2. 서비스 레이어에 삭제 작업 위임 (adminId로 소유권 확인)
+        campingZoneService.deleteCampingZone(adminId, id);
+
+        // 3. 성공 시 204 No Content 반환
+        return ResponseEntity.noContent().build();
+    }
 }

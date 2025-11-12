@@ -45,20 +45,32 @@ public class SecurityConfig {
                                 // 1. (수정) 관리자 및 고객의 로그인, 회원가입은 무조건 허용
                                 .requestMatchers(
                                         "/api/admins/signup", "/api/admins/login",
-                                        "/customer/signup", "/customer/login" // (추가) 고객 회원가입/로그인 경로 허용
+                                        "/customer/signup", "/customer/login", // (추가) 고객 회원가입/로그인 경로 허용
+                                        "/api/customer/social"
                                 ).permitAll()
-
-                                // 2. 캠핑장 상세보기/리뷰보기 (GET)는 허용
-                                .requestMatchers(HttpMethod.GET, "/api/zones/**").permitAll()
-
-                                // 3. /api/zones/** 에 대한 GET 이외의 요청(POST, PUT, DELETE 등)은 인증 필요
-                                .requestMatchers("/api/zones/**").authenticated()
-
-                                // 4. 예약 생성은 인증 필요
+                                // 2. 앱 + 전체관리자용 조회 API (모두 허용)
+                                // --- [수정] ---
+                                .requestMatchers(HttpMethod.GET,
+                                        "/api/zones/**", // 기존 (앱+전체관리자)
+                                        "/api/reservations/all", // [추가] (전체관리자)
+                                        "/api/admins/all" // [추가] (전체관리자)
+                                ).permitAll()
+                                // 3. React 일반 관리자 앱에서 사용하는 인증 필요 API
+                                .requestMatchers(HttpMethod.GET, "/api/admins/me").authenticated()
+                                .requestMatchers(HttpMethod.PUT, "/api/admins/me").authenticated()
+                                .requestMatchers(
+                                        HttpMethod.POST, "/api/zones", "/api/zones/form-data"
+                                ).authenticated()
+                                .requestMatchers(
+                                        HttpMethod.PUT, "/api/zones/*", "/api/zones/*/form-data"
+                                ).authenticated()
+                                .requestMatchers(
+                                        HttpMethod.DELETE, "/api/zones/*"
+                                ).authenticated()
+                                .requestMatchers(HttpMethod.GET, "/api/reservations/admin/**").authenticated()
                                 .requestMatchers(HttpMethod.POST, "/api/reservations/make").authenticated()
-
-                                // 5. 나의 예약 목록 조회는 인증 필요
-                                .requestMatchers(HttpMethod.GET, "/api/reservations/customer/**").authenticated() // (경로 수정)
+                                .requestMatchers(HttpMethod.GET, "/api/reservations/customer/**").authenticated()
+                                .requestMatchers(HttpMethod.PUT, "/api/reservations/*/cancel").authenticated()
 
                                 // 6. 위에서 명시한 외의 모든 요청은 인증을 받도록 변경 (보안 강화)
                                 .anyRequest().authenticated()
