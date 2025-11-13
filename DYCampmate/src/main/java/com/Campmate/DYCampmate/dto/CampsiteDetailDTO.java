@@ -3,11 +3,13 @@ package com.Campmate.DYCampmate.dto;
 import com.Campmate.DYCampmate.entity.AdminEntity;
 import com.Campmate.DYCampmate.entity.CampingZone;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
 
 @Data
 @NoArgsConstructor

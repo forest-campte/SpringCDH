@@ -33,16 +33,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final AdminRepo adminRepository;
 
-    // 인증 제외 경로 목록 (permitAll() 경로와 동일하게)
-    private static final List<String> EXCLUDED_PATHS = List.of(
-            "/api/admins/signup",
-            "/api/admins/login",
-            "/customer/signup",
-            "/customer/login",
-            "/api/customer/social",
-            "/customer/forecast"
-    );
-
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,

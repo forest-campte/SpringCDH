@@ -1,9 +1,12 @@
 package com.example.campmate.ui.weather
 
 import android.Manifest
+import android.text.format.DateUtils.isToday
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -20,39 +23,56 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.example.campmate.ui.weather.DailyForecastSummary // ❗️ ViewModel의 상태 클래스 임포트
-import com.example.campmate.ui.weather.SelectableLocation // ❗️ ViewModel의 상태 클래스 임포트
-import com.example.campmate.ui.weather.WeatherViewModel // ❗️ ViewModel 임포트
+import com.example.campmate.data.model.WeatherResponse
+import com.example.campmate.ui.weather.WeatherViewModel
 import java.time.LocalDate
+import java.time.LocalDateTime // ❗️ 시간 파싱용 임포트
 import java.time.format.DateTimeFormatter
 
-// --- 요청하신 테마 색상 정의 ---
+// --- 테마 색상 정의 (동일) ---
 val theme_light_primary = Color(0xFF226C2E)
 val theme_light_secondary = Color(0xFF53634B)
 val theme_light_background = Color(0xFFF9FAEF)
-val theme_light_surfaceVariant = Color(0xFFDEE5D9) // Card/Tile Borders
-val theme_light_secondaryContainer = Color(0xFFD6E8CA) // Tiled Backgrounds
+val theme_light_surfaceVariant = Color(0xFFDEE5D9)
+val theme_light_secondaryContainer = Color(0xFFD6E8CA)
 val theme_light_onPrimary = Color.White
-val theme_light_onSecondaryContainer = Color(0xFF111F0D) // secondaryContainer 위의 텍스트
+val theme_light_onSecondaryContainer = Color(0xFF111F0D)
 
-// --- 채도 필터 ---
-private val sunnyColorFilter by lazy {
-    val saturationMatrix = ColorMatrix()
-    saturationMatrix.setSaturation(1.5f)
-    ColorFilter.colorMatrix(saturationMatrix)
+
+@Composable
+private fun getIconResource(iconId: String): Int {
+    // ⬇️ 'R.drawable...' 대신 'com.example.campmate.R.drawable...'로
+    //    전체 경로를 명시합니다.
+    return when (iconId) {
+        "01d" -> com.example.campmate.R.drawable.ic_weather_01d // 맑음 (낮) sun
+        "01n" -> com.example.campmate.R.drawable.ic_weather_01n // 맑음 (밤) moon
+
+        "02d" -> com.example.campmate.R.drawable.ic_weather_02d // 구름 조금 (낮) cloud
+        "02n" -> com.example.campmate.R.drawable.ic_weather_02n // 구름 조금 (밤) cloudy
+
+        "03d", "03n" -> com.example.campmate.R.drawable.ic_weather_03d // 구름 많음 (낮/밤 동일)
+        "04d", "04n" -> com.example.campmate.R.drawable.ic_weather_04d // 흐림 (낮/밤 동일)
+
+        "09d", "09n" -> com.example.campmate.R.drawable.ic_weather_09d // 소나기 (낮/밤 동일)
+
+        "10d" -> com.example.campmate.R.drawable.ic_weather_10d // 비 (낮)
+        "10n" -> com.example.campmate.R.drawable.ic_weather_10n // 비 (밤)
+
+        "11d", "11n" -> com.example.campmate.R.drawable.ic_weather_11d // 천둥번개 (낮/밤 동일)
+        "13d", "13n" -> com.example.campmate.R.drawable.ic_weather_13d // 눈 (낮/밤 동일)
+        "50d", "50n" -> com.example.campmate.R.drawable.ic_weather_50d // 안개 (낮/밤 동일)
+
+        else -> com.example.campmate.R.drawable.ic_weather_01d // 기본값
+    }
 }
 
-// OpenWeatherMap 아이콘 URL 생성
-fun getIconUrl(iconId: String) = "https://openweathermap.org/img/wn/$iconId@4x.png"
 
 @Composable
 fun WeatherScreen(
@@ -60,17 +80,17 @@ fun WeatherScreen(
 ) {
     val forecastState by viewModel.forecastState.collectAsState()
 
-    // 1. 위치 권한 런처
+    // 1. 위치 권한 런처 (동일)
     val locationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
         if (permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) ||
             permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false)) {
-            // 권한 승인 (ViewModel의 init에서 이미 로드를 시도했음)
+            // 권한 승인
         }
     }
 
-    // 2. Composable 시작 시 권한 요청
+    // 2. Composable 시작 시 권한 요청 (동일)
     LaunchedEffect(Unit) {
         locationPermissionLauncher.launch(
             arrayOf(
@@ -84,25 +104,18 @@ fun WeatherScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(theme_light_background) // ⬅️ 새 배경색
-            .verticalScroll(rememberScrollState()) // 스크롤 가능하도록
+            .background(theme_light_background)
+            .verticalScroll(rememberScrollState())
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // --- 4. 위치 선택기 ---
-        LocationSelector(
-            availableLocations = forecastState.availableLocations,
-            selectedLocationId = forecastState.selectedLocationId,
-            onLocationSelected = { locationId ->
-                viewModel.onLocationSelected(locationId)
-            }
-        )
+        // --- 4. ❗️ 위치 선택기(LocationSelector) 제거됨 ---
 
-        Spacer(modifier = Modifier.height(16.dp))
+        // Spacer(modifier = Modifier.height(16.dp)) // 칩이 없으므로 간격 제거
 
         // --- 5. 날씨 정보 표시 ---
         if (forecastState.isLoading && forecastState.dailySummaries.isEmpty()) {
-            // 초기 로딩
+            // 초기 로딩 (동일)
             CircularProgressIndicator(
                 modifier = Modifier.padding(top = 64.dp),
                 color = theme_light_primary
@@ -113,34 +126,52 @@ fun WeatherScreen(
                 modifier = Modifier.padding(top = 16.dp)
             )
         } else if (forecastState.errorMessage != null) {
-            // 에러
+            // 에러 (동일)
             Text("오류: ${forecastState.errorMessage}", color = Color.Red)
         } else if (forecastState.dailySummaries.isNotEmpty()) {
             // --- 6. 데이터가 있을 때 ---
 
-            var selectedDay by remember {
+            // 6-1. (수정) 'selectedDay' 상태 관리 (UI에 표시할 하루치 요약)
+            var selectedDay by remember(forecastState.dailySummaries) {
                 mutableStateOf(forecastState.dailySummaries.first())
             }
 
-            LaunchedEffect(forecastState.dailySummaries) {
-                selectedDay = forecastState.dailySummaries.first()
+            // 6-2. (신규) 'selectedHour' 상태 관리 (UI에 표시할 3시간짜리 상세)
+            //      selectedDay가 바뀌면, 그 날의 첫 시간 데이터로 자동 리셋
+            var selectedHour by remember(selectedDay) {
+                mutableStateOf(selectedDay.hourlyData.first())
             }
 
-            // 6-1. 메인 날씨 카드
+            // 6-3. (수정) 메인 날씨 카드 - 'selectedDay' 요약이 아닌 'selectedHour' 상세를 표시
             WeatherDetailCard(
-                summary = selectedDay,
-                locationName = forecastState.locationDisplayName,
+                hourlyData = selectedHour, // ⬅️ 시간별 데이터 전달
+                locationName = forecastState.locationDisplayName, // "현재 위치"
                 isLoading = forecastState.isLoading
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 6-2. 5일 예보 선택 스크롤
-            ForecastRow(
+            // 6-4. (신규) 3시간 간격 "시간 선택" 스크롤
+            Text("시간별 예보", style = MaterialTheme.typography.titleMedium, color = theme_light_secondary, modifier = Modifier.fillMaxWidth())
+            Spacer(modifier = Modifier.height(8.dp))
+            HourlyForecastRow(
+                hourlyDataList = selectedDay.hourlyData, // ⬅️ 'selectedDay'의 시간 목록을 전달
+                selectedHour = selectedHour,
+                onHourSelected = { newHour ->
+                    selectedHour = newHour // ⬅️ 시간 선택 시 'selectedHour' 상태 업데이트
+                }
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // 6-5. (기존) "날짜 선택" 스크롤
+            Text("날짜별 예보", style = MaterialTheme.typography.titleMedium, color = theme_light_secondary, modifier = Modifier.fillMaxWidth())
+            Spacer(modifier = Modifier.height(8.dp))
+            DailyForecastRow( // ⬅️ 이름 변경 (ForecastRow -> DailyForecastRow)
                 summaries = forecastState.dailySummaries,
                 selectedDate = selectedDay.date,
                 onDaySelected = { newSelectedDay ->
-                    selectedDay = newSelectedDay
+                    selectedDay = newSelectedDay // ⬅️ 날짜 선택 시 'selectedDay' 상태 업데이트
                 }
             )
         }
@@ -148,62 +179,24 @@ fun WeatherScreen(
 }
 
 /**
- * 1. (새 Composable) 위치 선택기 (상단 칩 그룹)
+ * 1. ❗️ LocationSelector Composable 제거됨
  */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun LocationSelector(
-    availableLocations: List<SelectableLocation>,
-    selectedLocationId: String,
-    onLocationSelected: (String) -> Unit
-) {
-    if (availableLocations.size > 1) { // 선택지가 2개 이상일 때만 표시
-        LazyRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(availableLocations, key = { it.id }) { location ->
-                val isSelected = location.id == selectedLocationId
-
-                FilterChip(
-                    selected = isSelected,
-                    onClick = { onLocationSelected(location.id) },
-                    label = { Text(location.name) },
-                    shape = RoundedCornerShape(16.dp),
-                    colors = FilterChipDefaults.filterChipColors(
-                        containerColor = theme_light_secondaryContainer,
-                        labelColor = theme_light_onSecondaryContainer,
-                        selectedContainerColor = theme_light_primary, // ⬅️ 선택됨 (Primary)
-                        selectedLabelColor = theme_light_onPrimary // ⬅️ 선택됨 (White)
-                    ),
-                    border = FilterChipDefaults.filterChipBorder(
-                        borderColor = theme_light_surfaceVariant,
-                        selectedBorderColor = theme_light_primary
-                    )
-                )
-            }
-        }
-    }
-}
-
 
 /**
- * 2. 메인 날씨 정보 카드 (색상 수정)
+ * 2. 메인 날씨 정보 카드 (수정: DailyForecastSummary -> WeatherResponse)
  */
 @Composable
 fun WeatherDetailCard(
-    summary: DailyForecastSummary,
+    hourlyData: WeatherResponse,
     locationName: String,
     isLoading: Boolean
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, theme_light_surfaceVariant, RoundedCornerShape(20.dp)), // ⬅️ 테두리
+            .border(1.dp, theme_light_surfaceVariant, RoundedCornerShape(20.dp)),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White // ⬅️ 배경색 (F9FAEF) 위에 흰색 카드
-        ),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
@@ -216,12 +209,16 @@ fun WeatherDetailCard(
                 text = locationName,
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
-                color = theme_light_primary // ⬅️ Primary
+                color = theme_light_primary
             )
+
+            // ⬅️ 2. 날짜 대신 '시간' 표시
+            val timeFormatter = DateTimeFormatter.ofPattern("M월 d일 HH:mm")
+            val dateTime = LocalDateTime.parse(hourlyData.dt_txt, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
             Text(
-                text = summary.date.format(DateTimeFormatter.ofPattern("M월 d일")),
+                text = dateTime.format(timeFormatter), // "11월 13일 18:00"
                 fontSize = 16.sp,
-                color = theme_light_secondary // ⬅️ Secondary
+                color = theme_light_secondary
             )
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -229,51 +226,119 @@ fun WeatherDetailCard(
                 modifier = Modifier.size(120.dp),
                 contentAlignment = Alignment.Center
             ) {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(getIconUrl(summary.icon))
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = summary.description,
+                Image(
+                    painter = painterResource(id = getIconResource(hourlyData.icon)),
+                    contentDescription = hourlyData.description,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
-                // 칩을 눌러 위치 변경 시 로딩 스피너 표시
                 if (isLoading) {
                     CircularProgressIndicator(color = theme_light_primary)
                 }
             }
 
+            // ⬅️ 3. 평균 온도 대신 '현재' 온도 표시
             Text(
-                text = "${( (summary.tempMax + summary.tempMin) / 2 ).toInt()}°",
+                text = "${hourlyData.temperature.toInt()}°",
                 fontSize = 60.sp,
                 fontWeight = FontWeight.ExtraBold,
-                color = theme_light_primary // ⬅️ Primary
+                color = theme_light_primary
             )
             Text(
-                text = summary.description,
+                text = hourlyData.description,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Medium,
-                color = theme_light_secondary // ⬅️ Secondary
+                color = theme_light_secondary
             )
             Spacer(modifier = Modifier.height(16.dp))
 
+            // ⬅️ 4. 최고/최저 대신 '습도' 표시 (WeatherInfoChip은 재사용)
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                horizontalArrangement = Arrangement.Center
             ) {
-                WeatherInfoChip(label = "최고", value = "${summary.tempMax.toInt()}°")
-                WeatherInfoChip(label = "최저", value = "${summary.tempMin.toInt()}°")
+                WeatherInfoChip(label = "습도", value = "${hourlyData.humidity}%")
+                // (참고: DTO에 feels_like가 있다면 여기에 체감온도 추가 가능)
             }
         }
     }
 }
 
 /**
- * 3. 5일 예보 가로 스크롤 (색상 수정)
+ * 3. (신규) 3시간 간격 '시간' 스크롤
  */
 @Composable
-fun ForecastRow(
+fun HourlyForecastRow(
+    hourlyDataList: List<WeatherResponse>,
+    selectedHour: WeatherResponse,
+    onHourSelected: (WeatherResponse) -> Unit
+) {
+    LazyRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        items(hourlyDataList) { hourData ->
+            HourlyForecastItem( // ⬅️ 시간별 아이템 Composable
+                data = hourData,
+                isSelected = hourData == selectedHour,
+                onClick = { onHourSelected(hourData) }
+            )
+        }
+    }
+}
+
+/**
+ * 4. (신규) '시간' 스크롤의 개별 아이템
+ */
+@Composable
+fun HourlyForecastItem(
+    data: WeatherResponse,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    val backgroundColor = if (isSelected) theme_light_primary else theme_light_secondaryContainer
+    val textColor = if (isSelected) theme_light_onPrimary else theme_light_onSecondaryContainer
+
+    // 시간 파싱
+    val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+    val dateTime = LocalDateTime.parse(data.dt_txt, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+
+    Column(
+        modifier = Modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(backgroundColor)
+            .clickable { onClick() }
+            .padding(vertical = 16.dp, horizontal = 20.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = dateTime.format(timeFormatter), // "18:00"
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold,
+            color = textColor
+        )
+        Image(
+            painter = painterResource(id = getIconResource(data.icon)),
+            contentDescription = null,
+            modifier = Modifier.size(40.dp),
+//            colorFilter = ColorFilter.tint(textColor)
+        )
+        Text(
+            text = "${data.temperature.toInt()}°",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Medium,
+            color = textColor
+        )
+    }
+}
+
+
+/**
+ * 5. (이름 변경) 5일 예보 '날짜' 스크롤
+ */
+@Composable
+fun DailyForecastRow( // ⬅️ 이름 변경 (ForecastRow -> DailyForecastRow)
     summaries: List<DailyForecastSummary>,
     selectedDate: LocalDate?,
     onDaySelected: (DailyForecastSummary) -> Unit
@@ -283,7 +348,7 @@ fun ForecastRow(
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         items(summaries) { daySummary ->
-            ForecastDayItem(
+            ForecastDayItem( // ⬅️ 이 Composable은 기존 것 그대로 사용
                 summary = daySummary,
                 isSelected = daySummary.date == selectedDate,
                 onClick = { onDaySelected(daySummary) }
@@ -293,7 +358,7 @@ fun ForecastRow(
 }
 
 /**
- * 4. 예보 스크롤 개별 날짜 아이템 (색상 수정)
+ * 6. (기존) '날짜' 스크롤의 개별 아이템 (동일)
  */
 @Composable
 fun ForecastDayItem(
@@ -313,8 +378,6 @@ fun ForecastDayItem(
     }
 
     val isToday = summary.date == LocalDate.now()
-    val itemColorFilter = if (isToday) null else sunnyColorFilter
-
     Column(
         modifier = Modifier
             .clip(RoundedCornerShape(16.dp))
@@ -331,11 +394,11 @@ fun ForecastDayItem(
             fontWeight = FontWeight.Bold,
             color = textColor
         )
-        AsyncImage(
-            model = getIconUrl(summary.icon),
+        Image(
+            painter = painterResource(id = getIconResource(summary.icon)),
             contentDescription = null,
             modifier = Modifier.size(40.dp),
-            colorFilter = itemColorFilter
+//            colorFilter = ColorFilter.tint(textColor)
         )
         Text(
             text = "${summary.tempMax.toInt()}°",
@@ -352,7 +415,7 @@ fun ForecastDayItem(
 }
 
 /**
- * 5. 최고/최저 기온 칩 (색상 수정)
+ * 7. (기존) 최고/최저 기온 칩 (동일)
  */
 @Composable
 fun WeatherInfoChip(label: String, value: String) {

@@ -20,12 +20,7 @@ public class WeatherService {
 
     private final WebClient webClient;
     private final String apiKey;
-    private static final Logger log = LoggerFactory.getLogger(WeatherService.class);
 
-    public static class Coordinates {
-        public double lat;
-        public double lon;
-    }
 
     public WeatherService(WebClient.Builder webClientBuilder,
                           @Value("${openweathermap.api.url}") String baseUrl,
@@ -67,49 +62,6 @@ public class WeatherService {
                 })
                 .collect(Collectors.toList()); // DTO의 List로 반환
     }
-
-    /**
-     * 주소 문자열을 위도/경도로 변환합니다. (OpenWeatherMap Geocoding API 사용)
-     * (주의: 이 함수는 WebClient를 '차단(blocking)' 방식으로 호출합니다)
-     */
-    public Coordinates getCoordinatesFromAddress(String address) {
-        if (address == null || address.trim().isEmpty()) {
-            return null;
-        }
-
-        try {
-            // OpenWeatherMap Geocoding API 엔드포인트: /geo/1.0/direct
-            Mono<JsonNode> responseMono = this.webClient.get()
-                    .uri(uriBuilder -> uriBuilder.path("/geo/1.0/direct")
-                            .queryParam("q", address) // ⬅️ 주소 전달
-                            .queryParam("limit", 1)   // ⬅️ 가장 정확한 1개만 받기
-                            .queryParam("appid", this.apiKey)
-                            .build())
-                    .retrieve()
-                    .bodyToMono(JsonNode.class); // ⬅️ 응답이 JSON 배열로 옴
-
-            // ❗️ 중요: Mono를 동기식으로 실행 (JPA Service에서 호출하기 위함)
-            JsonNode responseArray = responseMono.block();
-
-            // 3. 응답 파싱
-            if (responseArray != null && responseArray.isArray() && responseArray.size() > 0) {
-                JsonNode geoData = responseArray.get(0); // 배열의 첫 번째 결과 사용
-                Coordinates coords = new Coordinates();
-                coords.lat = geoData.path("lat").asDouble();
-                coords.lon = geoData.path("lon").asDouble();
-
-                log.info(" Geocoding 성공: {} -> [{}, {}]", address, coords.lat, coords.lon);
-                return coords;
-            } else {
-                log.warn(" Geocoding 실패: 주소 '{}'에 대한 결과를 찾을 수 없음", address);
-                return null;
-            }
-        } catch (Exception e) {
-            log.error(" Geocoding API 호출 중 예외 발생: {}", e.getMessage());
-            return null;
-        }
-    }
-
 
 }
 

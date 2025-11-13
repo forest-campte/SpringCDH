@@ -70,7 +70,7 @@ public class SecurityConfig {
                                         HttpMethod.DELETE, "/api/zones/*"
                                 ).authenticated()
                                 .requestMatchers(HttpMethod.GET, "/api/reservations/admin/**").authenticated()
-                                .requestMatchers(HttpMethod.POST, "/api/reservations/make").authenticated()
+                                .requestMatchers("/api/reservations/make").authenticated()
                                 .requestMatchers(HttpMethod.GET, "/api/reservations/customer/**").authenticated()
                                 .requestMatchers(HttpMethod.PUT, "/api/reservations/*/cancel").authenticated()
 //                                .requestMatchers("/customer/forecast").authenticated()

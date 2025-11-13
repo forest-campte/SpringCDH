@@ -2,6 +2,7 @@ package com.Campmate.DYCampmate.dto;
 
 import com.Campmate.DYCampmate.entity.CampingZone;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

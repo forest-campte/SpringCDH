@@ -12,7 +12,7 @@ import java.util.Date;
 
 @Component
 public class JwtUtil {
-    private final long expiration = 1000 * 60 * 10; // 10분
+    private final long expiration = 1000 * 60 * 30; // 30분
     @Value("${jwt.secret}")
     private String secret;
 

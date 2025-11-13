@@ -74,10 +74,10 @@ public class CampingZoneService {
     /**
      * 캠핑장(Admin) 상세 정보 + 소유한 캠핑존(Zone) 목록 조회
      * @param adminId (id는 이제 adminId로 취급)
+
      */
     @Transactional(readOnly = true)
     public CampsiteDetailDTO getCampsiteDetail(Long adminId) {
-
         // 1. ID로 Admin(캠핑장) 정보를 찾습니다.
         AdminEntity admin = adminRepository.findById(adminId)
                 .orElseThrow(() -> new IllegalArgumentException("Campsite (Admin) not found: " + adminId));
