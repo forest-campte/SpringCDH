@@ -8,6 +8,9 @@ import com.Campmate.DYCampmate.service.WeatherService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
@@ -45,13 +48,37 @@ public class CustomerController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<?> getMyInfo(HttpServletRequest request) {
-        CustomerEntity customer = (CustomerEntity) request.getAttribute("customerId"); // customers_Id??
+    public ResponseEntity<?> getMyInfo(Authentication authentication) { // 3. HttpServletRequest 대신 Authentication 사용
 
-        if (customer == null) {
-            return ResponseEntity.status(401).body("토큰이 유효하지 않거나 만료되었습니다.");
+        // 4. 인증 객체 유효성 검사
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).body("인증 정보가 없습니다.");
         }
 
+        // 5. Principal(사용자 정보) 가져오기
+        Object principal = authentication.getPrincipal();
+        UserDetails userDetails;
+
+        if (principal instanceof UserDetails) {
+            userDetails = (UserDetails) principal;
+        } else {
+            // Admin 등 다른 타입의 Principal이 들어올 경우
+            return ResponseEntity.status(403).body("고객 정보에 접근할 수 없습니다.");
+        }
+
+        // 6. UserDetails에서 customerId(String) 추출
+        String customerIdString = userDetails.getUsername();
+
+        // 7. customerId(String)로 실제 CustomerEntity 정보 조회
+        // (CustomerService에 findCustomerByCustomerId 메소드가 필요합니다)
+        CustomerEntity customer;
+        try {
+            customer = customerService.findCustomerByCustomerId(customerIdString);
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        }
+
+        // 8. DTO 빌드 (기존 로직 동일)
         CustomerResponseDTO dto = CustomerResponseDTO.builder()
                 .id(customer.getId())
                 .customerId(customer.getCustomerId())

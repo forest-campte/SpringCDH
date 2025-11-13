@@ -33,5 +33,5 @@ public interface ReviewRepo extends JpaRepository<ReviewEntity, Long> {
     // 여러 개의 CampingZone ID 목록을 받아 모든 리뷰를 찾는 메서드
     List<ReviewEntity> findByCampingZoneIdIn(List<Long> zoneIds);
 
-
+    List<ReviewEntity> findByCustomerIdOrderByIdDesc(Long customerId);
 }

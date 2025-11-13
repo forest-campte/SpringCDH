@@ -5,6 +5,7 @@ import com.Campmate.DYCampmate.dto.*;
 import com.Campmate.DYCampmate.entity.CustomerEntity;
 import com.Campmate.DYCampmate.repository.CustomerRepo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -89,4 +90,8 @@ public class CustomerService {
     }
 
 
+    public CustomerEntity findCustomerByCustomerId(String customerId) {
+        return customerRepository.findByCustomerId(customerId)
+                .orElseThrow(() -> new UsernameNotFoundException("해당 ID의 고객을 찾을 수 없습니다: " + customerId));
+    }
 }

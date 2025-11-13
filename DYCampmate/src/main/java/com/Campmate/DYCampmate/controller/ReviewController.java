@@ -1,5 +1,6 @@
 package com.Campmate.DYCampmate.controller;
 
+import com.Campmate.DYCampmate.dto.MyReviewResponseDTO;
 import com.Campmate.DYCampmate.dto.ReviewRequestDTO;
 import com.Campmate.DYCampmate.dto.ReviewResponseDTO;
 import com.Campmate.DYCampmate.service.ReviewService;
@@ -31,5 +32,14 @@ public class ReviewController {
     @GetMapping("/campsite/{campingZoneId}")
     public ResponseEntity<List<ReviewResponseDTO>> getReviewsByCampingZone(@PathVariable Long campingZoneId) {
         return ResponseEntity.ok(reviewService.getReviewsByCampingZone(campingZoneId));
+    }
+
+    //로그인한 유저의 리뷰 조회
+    @GetMapping("/my/{customerId}")
+    public ResponseEntity<List<MyReviewResponseDTO>> getMyReviews(
+            @PathVariable Long customerId
+    ) {
+        List<MyReviewResponseDTO> myReviews = reviewService.getMyReviewsByCustomerId(customerId);
+        return ResponseEntity.ok(myReviews);
     }
 }

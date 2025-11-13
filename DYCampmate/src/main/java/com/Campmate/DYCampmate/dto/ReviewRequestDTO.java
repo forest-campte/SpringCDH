@@ -1,5 +1,6 @@
 package com.Campmate.DYCampmate.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 @Getter
@@ -8,9 +9,15 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class ReviewRequestDTO {
-    private Long reservationsId;
-    private Long customersId;
+    @JsonProperty("reservation_id")
+    private Long reservationId;
+
+    @JsonProperty("customers_Id")
+    private Long customerId;
+
+    @JsonProperty("camping_zone_id")
     private Long campingZoneId;
+
     private int rating;
     private String coment;
 }

@@ -14,6 +14,7 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 @Module
@@ -32,6 +33,10 @@ object NetworkModule {
         loggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
 
         return OkHttpClient.Builder()
+            //25.11.14 DH 통신 속도가 너무 빨라 에러 발생하여 타임아웃 적용
+            .connectTimeout(15, TimeUnit.SECONDS) // 연결 타임아웃
+            .readTimeout(30, TimeUnit.SECONDS)    // 읽기 타임아웃 (기존 1초 -> 30초)
+            .writeTimeout(15, TimeUnit.SECONDS)   // 쓰기 타임아웃
             .addInterceptor(authInterceptor)     // 3. 모든 요청에 '인증 검문소'를 통과하도록 설정합니다.
             .addInterceptor(loggingInterceptor) // 4. 모든 통신 내용을 로그로 찍도록 설정합니다.
             .build()
