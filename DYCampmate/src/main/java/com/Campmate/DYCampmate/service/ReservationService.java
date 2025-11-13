@@ -108,7 +108,7 @@ public class ReservationService {
                 .children(request.getChildren())
                 // .status(ReservationStatus.R) // @PrePersist가 처리
                 .customerName(customer.getNickname())
-                .customerPhone(customer.)
+//                .customerPhone(customer.getPhone)
                 .build();
 
         reservationRepo.save(reservation);
