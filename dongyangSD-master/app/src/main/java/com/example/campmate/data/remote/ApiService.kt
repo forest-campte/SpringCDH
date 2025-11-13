@@ -30,7 +30,7 @@ interface ApiService {
 
     // cdh1028 :
     @GET("reviews")
-    suspend fun getMyReviews(): Response<List<Review>>
+    suspend fun getMyReviews(@Path("id") customerId : Long): Response<List<Review>>
 
     // ✅✅✅ [핵심] ViewModel이 찾고 있던 'getCampsiteReviews' 함수입니다. ✅✅✅
     // (백엔드에 GET /reviews/campsite/{id} 주소가 필요합니다)

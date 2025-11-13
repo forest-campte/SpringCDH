@@ -44,6 +44,8 @@ public interface CampingZoneRepository extends JpaRepository<CampingZone,Long> {
             "WHERE cz.admin = :admin " + // Admin 객체로 필터링
             "GROUP BY cz.id")
     List<ZoneHomeViewDTO> findAllByAdminWithAverageRating(@Param("admin") AdminEntity admin);
+
+    List<CampingZone> findByAdmin_Id(Long adminId);
 //    @Query("SELECT new com.Campmate.DYCampmate.dto.ZoneAdminRatingDTO(" +
 //            "    cz.id, cz.name, cz.description, cz.imageUrl, " +
 //            "    CAST(COALESCE(AVG(r.rating), 0.0) AS double), " +

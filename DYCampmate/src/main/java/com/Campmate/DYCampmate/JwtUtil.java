@@ -12,7 +12,7 @@ import java.util.Date;
 
 @Component
 public class JwtUtil {
-    private final long expiration = 1000 * 60 * 60 * 3; // 3시간
+    private final long expiration = 1000 * 60 * 10; // 10분
     @Value("${jwt.secret}")
     private String secret;
 
@@ -52,11 +52,8 @@ public class JwtUtil {
      * 토큰에서 모든 클레임(정보)을 추출합니다.
      */
     public Claims getClaims(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+        return Jwts.parserBuilder().setSigningKey(key).build()
+                .parseClaimsJws(token).getBody();
     }
 
     public boolean validateToken(String token) {

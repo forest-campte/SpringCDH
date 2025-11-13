@@ -49,4 +49,7 @@ public class ReviewEntity {
     public void prePersist() {
         this.createdDt = LocalDateTime.now();
     }
+
+    @Column(name="image_url")
+    private String imageUrl;
 }

@@ -82,4 +82,5 @@ public interface ReservationRepo extends JpaRepository<ReservationEntity, Long> 
      * 특정 캠핑존(부모)에 속한 모든 예약(자식)을 삭제합니다.
      */
     void deleteAllByCampingZone(CampingZone campingZone);
+
 }

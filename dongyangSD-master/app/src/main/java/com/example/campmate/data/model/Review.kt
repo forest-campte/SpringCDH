@@ -16,10 +16,9 @@ data class Review(
     @SerializedName("camping_zone_id")
     val campingZoneId: Int,
     // DB에 없는 필드이지만, 목록 표시를 위해 백엔드에서 조인하여 받아와야 함, 확인 필요
-    /*
     @SerializedName("campsiteName")
     val campsiteName: String = "알 수 없음",
-     */
+
     // DB: rating
     @SerializedName("rating")
     val rating: Float,

@@ -32,7 +32,7 @@ public class ReservationService {
     private final CustomerRepo customerRepo;
     private final JwtUtil jwtUtil;
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
+    private final WeatherService weatherService;
 
     /**
      * 특정 관리자(Admin)의 모든 예약을 조회하는 메서드
@@ -187,7 +187,7 @@ public class ReservationService {
      */
     private ReservationResponseDTO toResponse(ReservationEntity entity) {
         return ReservationResponseDTO.builder()
-                .reservationId(entity.getId().toString())
+                .reservationId(entity.getId())
                 .Campsite(CampingZone.builder()
                     .id(entity.getCampingZone().getId())
                     .name(entity.getCampingZone().getName())
@@ -199,6 +199,52 @@ public class ReservationService {
                 .children(entity.getChildren() != null? entity.getChildren() : 0)
                 .selectedSiteName(entity.getCampingZone().getName())
                 .build();
+    }
+
+    /**
+     * 나의 예약 목록을 "위도/경도가 포함된" DTO 리스트로 반환합니다.
+     */
+    public List<ReservationResponseDTO> getMyReservationsWithCoordinates(Long customerId) {
+
+        // 1. DB에서 원본 예약 목록을 가져옵니다.
+        List<ReservationEntity> dbReservations = reservationRepo.findByCustomer_Id(customerId);
+
+        // 2. Stream을 사용해 각 Reservation을 DTO로 변환합니다.
+        return dbReservations.stream()
+                .map(this::mapReservationToDtoWithCoords)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Reservation 엔티티를 ReservationResponseDto로 변환하고,
+     * Geocoding을 통해 위도/경도를 채워 넣는 헬퍼 함수
+     */
+    private ReservationResponseDTO mapReservationToDtoWithCoords(ReservationEntity reservation) {
+
+        // 3. ⭐️ 핵심: WeatherService를 호출해 좌표를 가져옵니다.
+        WeatherService.Coordinates coords = weatherService.getCoordinatesFromAddress(reservation.getAdmin().getAddress());
+
+        // 4. DTO 객체를 생성하고 데이터를 매핑합니다.
+        ReservationResponseDTO dto = new ReservationResponseDTO();
+
+        // (기존 필드 매핑)
+        dto.setReservationId(reservation.getId());
+        dto.setSelectedSiteName(reservation.getCampingZone().getName());
+        dto.setCheckInDate(String.valueOf(reservation.getCheckIn())); // (형식이 맞는지 확인)
+        dto.setCheckOutDate(String.valueOf(reservation.getCheckOut()));
+        // ... (기타 필드)
+
+        // 5. (추가) 변환된 좌표를 DTO에 설정합니다.
+        if (coords != null) {
+            dto.setLatitude(coords.lat);
+            dto.setLongitude(coords.lon);
+        } else {
+            // 주소 변환 실패 시 null로 남겨둠 (또는 기본값 설정)
+            dto.setLatitude(null);
+            dto.setLongitude(null);
+        }
+
+        return dto;
     }
 
     /**

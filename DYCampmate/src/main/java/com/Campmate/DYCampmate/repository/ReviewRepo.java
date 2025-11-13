@@ -29,4 +29,9 @@ public interface ReviewRepo extends JpaRepository<ReviewEntity, Long> {
      * 특정 캠핑존(부모)에 속한 모든 리뷰(자식)를 삭제합니다.
      */
     void deleteAllByCampingZone(CampingZone campingZone);
+
+    // 여러 개의 CampingZone ID 목록을 받아 모든 리뷰를 찾는 메서드
+    List<ReviewEntity> findByCampingZoneIdIn(List<Long> zoneIds);
+
+
 }

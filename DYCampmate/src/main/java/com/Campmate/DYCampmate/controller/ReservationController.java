@@ -148,6 +148,22 @@ public class ReservationController {
         return ResponseEntity.ok(reservations);
     }
 
+    /**
+     * 나의 예약 목록을 (위도/경도 포함) 반환
+     * ❗️(참고: ReservationRepository의 fetchMyReservations는 StateFlow를 사용하므로,
+     * Spring에서는 별도의 Service 메서드를 만드는 것이 좋습니다.)
+     */
+    @GetMapping("/api/my-reservations/{customerId}")
+    public ResponseEntity<List<ReservationResponseDTO>> getMyReservationsWithCoordinates(
+            @PathVariable Long customerId
+    ) {
+        // 3. 좌표 변환 로직이 포함된 새 서비스 메서드 호출
+        List<ReservationResponseDTO> reservationDtos =
+                reservationService.getMyReservationsWithCoordinates(customerId);
+
+        return ResponseEntity.ok(reservationDtos);
+    }
+
     // 예약 취소
     @PutMapping("/{id}/cancel")
     public String cancelReservation(@PathVariable Long id) {

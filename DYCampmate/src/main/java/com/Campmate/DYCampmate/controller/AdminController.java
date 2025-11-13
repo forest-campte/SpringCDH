@@ -100,7 +100,7 @@ public class AdminController {
             // 이 예외는 JwtAuthFilter에서 이미 처리되었겠지만, 방어 코드로 추가
             throw new SecurityException("User is not authenticated");
         }
-        // JwtAuthFilter에서 Principal의 name에 ID를 저장했다고 가정
+        // JwtAuthFilter에서 Principal의 name에 ID를 저장
         return Long.parseLong(authentication.getName());
     }
 

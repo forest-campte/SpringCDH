@@ -5,6 +5,7 @@ package com.Campmate.DYCampmate.service;
 import com.Campmate.DYCampmate.dto.*;
 import com.Campmate.DYCampmate.entity.AdminEntity;
 import com.Campmate.DYCampmate.entity.CampingZone;
+import com.Campmate.DYCampmate.entity.ReviewEntity;
 import com.Campmate.DYCampmate.repository.AdminRepo;
 import com.Campmate.DYCampmate.repository.CampingZoneRepository;
 import com.Campmate.DYCampmate.repository.ReservationRepo;
@@ -71,45 +72,50 @@ public class CampingZoneService {
     }
 
     /**
-     * ✅ [수정]
-     * 캠핑존 상세 정보 조회 (수정 전 원본 로직)
-     * reviewCount, admin 등을 DTO로 전달하지 않습니다.
+     * 캠핑장(Admin) 상세 정보 + 소유한 캠핑존(Zone) 목록 조회
+     * @param adminId (id는 이제 adminId로 취급)
      */
-    public CampsiteDetailDTO getCampsiteDetail(Long campsiteId) {
-        CampingZone mainZone = campingZoneRepository.findById(campsiteId)
-                .orElseThrow(() -> new IllegalArgumentException("Campsite not found: " + campsiteId));
+    @Transactional(readOnly = true)
+    public CampsiteDetailDTO getCampsiteDetail(Long adminId) {
 
-        AdminEntity admin = mainZone.getAdmin();
+        // 1. ID로 Admin(캠핑장) 정보를 찾습니다.
+        AdminEntity admin = adminRepository.findById(adminId)
+                .orElseThrow(() -> new IllegalArgumentException("Campsite (Admin) not found: " + adminId));
 
-        // [수정] admin이 null일 경우를 대비한 방어 코드
-        List<CampsiteSiteDTO> siteDTOs;
-        if (admin != null) {
-            List<CampingZone> allSitesFromAdmin = campingZoneRepository.findAllByAdmin(admin);
-            siteDTOs = allSitesFromAdmin.stream()
-                    .map(CampsiteSiteDTO::fromEntity)
-                    .collect(Collectors.toList());
-        } else {
-            siteDTOs = Collections.emptyList();
-        }
+        // 2. 해당 Admin ID에 속한 모든 CampingZone(사이트) 목록을 찾습니다.
+        //    (CampingZoneRepository에 findByAdminsId 메서드 필요)
+        List<CampingZone> zones = campingZoneRepository.findByAdmin_Id(adminId);
 
-        Double averageRating = reviewRepository.findAverageRatingByCampingZoneId(campsiteId);
-
-        // ✅ [수정] 원본 DTO의 fromEntity 메소드 호출
-        return CampsiteDetailDTO.fromEntity(
-                mainZone,
-                averageRating,
-                siteDTOs
-        );
+        // 3. Entity를 DTO로 변환하여 반환합니다.
+        return CampsiteDetailDTO.fromEntity(admin, zones);
     }
 
     /**
-     * 특정 캠핑존의 리뷰 목록 조회
+     * 캠핑장(Admin)에 달린 모든 리뷰 조회
+     * @param adminId (id는 이제 adminId로 취급)
      */
-    public List<ReviewDTO> getReviews(Long campsiteId) {
-        //  findAllByCampingZoneId가 List<ReviewEntity>를 반환
-        return reviewRepository.findAllByCampingZoneId(campsiteId)
-                .stream()
-                .map(ReviewDTO::fromEntity)
+    @Transactional(readOnly = true)
+    public List<ReviewDTO> getReviews(Long adminId) {
+
+        // 1. 해당 Admin ID에 속한 모든 CampingZone(사이트) 목록을 찾습니다.
+        List<CampingZone> zones = campingZoneRepository.findByAdmin_Id(adminId);
+
+        if (zones.isEmpty()) {
+            return Collections.emptyList(); // 존이 없으면 빈 리뷰 목록 반환
+        }
+
+        // 2. 모든 CampingZone의 ID 목록을 추출합니다.
+        List<Long> zoneIds = zones.stream()
+                .map(CampingZone::getId)
+                .collect(Collectors.toList());
+
+        // 3. 해당 ID 목록에 포함된 모든 리뷰를 조회합니다.
+        //    (ReviewRepository에 findByCampingZoneIdIn 메서드 필요)
+        List<ReviewEntity> reviews = reviewRepository.findByCampingZoneIdIn(zoneIds);
+
+        // 4. Entity를 DTO로 변환하여 반환합니다.
+        return reviews.stream()
+                .map(review -> ReviewDTO.fromEntity(review)) // ReviewDTO::fromEntity 사용
                 .collect(Collectors.toList());
     }
 

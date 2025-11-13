@@ -1,5 +1,6 @@
 package com.example.campmate.data
 
+import android.R.attr.rating
 import android.util.Log
 import com.example.campmate.data.model.Campsite
 import com.example.campmate.data.model.Reservation
@@ -17,7 +18,9 @@ import javax.inject.Singleton
 
 @Singleton
 class ReservationRepository @Inject constructor(
-    private val apiService: ApiService // (수정) API 서비스 주입
+    private val apiService: ApiService, // (수정) API 서비스 주입
+    //25.11.10 KM 수정
+    private val tokenManager: TokenManager
 ) {
 
     // --- 예약 관련 ---
@@ -92,6 +95,8 @@ class ReservationRepository @Inject constructor(
     private val _myReviews = MutableStateFlow<List<Review>>(emptyList())
     val myReviews = _myReviews.asStateFlow()
 
+    // 11.10 KM 수정
+    /*
     fun addMyReview(campsiteName: String, rating: Float, content: String) {
         val newReview = Review(
             reviewId = (_myReviews.value.maxOfOrNull { it.reviewId } ?: 0) + 1,
@@ -102,6 +107,54 @@ class ReservationRepository @Inject constructor(
             content = content,
             imageUrls = emptyList(), // 이미지 URL은 비어있는 리스트로 전달
             createdAt = formatDate(System.currentTimeMillis()) // 현재 시간을 날짜 문자열로 변환하여 전달
+
+     */
+    /*
+    25.11.10 KM 수정 (추가) 서버에서 현재 로그인된 사용자의 리뷰 목록을 불러온다.
+     */
+    suspend fun fetechMyReviews() {
+        //1. 사용자 ID 가져오기
+        val customerId = tokenManager.getUserId() ?: run {
+            Log.e("ReviewRepo", "사용자 ID를 찾을 수 없습니다. 리뷰 로드 중단")
+            _myReviews.value = emptyList()
+            return
+        }
+
+        try {
+            // 2. (추가) ApiService를 통해 서버에서 내 리뷰 목록 호출
+            //getMyReviews(Long) 함수가 정의
+            val response = apiService.getMyReviews(customerId)
+
+            if (response.isSuccessful) {
+                _myReviews.value = response.body() ?: emptyList()
+                Log.d("ReviewRepo", "내 리뷰 목록 로드 성공: ${response.body()?.size}개")
+            } else {
+                Log.e("ReviewRepo", "내 리뷰 목록 로드 실패: ${response.code()}")
+                _myReviews.value = emptyList()
+            }
+        } catch (e: Exception) {
+            Log.e("ReviewRepo", "내 리뷰 목록 로드 중 네트워크 오류", e)
+            _myReviews.value = emptyList()
+        }
+    }
+    fun addMyReview(
+        // 💡 Review 모델에 맞추기 위해 필요한 인자를 임시로 추가합니다.
+        reservationId: Long,
+        campingZoneId: Int,
+        customerId: Long,
+        rating: Float,
+        content: String
+    ) {
+        val newReview = Review(
+            reviewId = (_myReviews.value.maxOfOrNull { it.reviewId } ?: 0) + 1,
+            reservationId = reservationId, // ✅ 추가
+            customerId = customerId,       // ✅ 추가
+            campingZoneId = campingZoneId, // ✅ campsiteId -> campingZoneId로 이름 변경
+            rating = rating,
+            content = content,              // ✅ content -> coment로 이름 변경 (DB에 맞춤)
+            createdAt = formatDate(System.currentTimeMillis()), // ✅ createdAt -> createDt로 이름 변경
+
+
         )
         _myReviews.update { currentList -> currentList + newReview }
     }

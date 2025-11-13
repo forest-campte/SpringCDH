@@ -13,11 +13,14 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class ReservationResponseDTO {
-    private String reservationId;
+    private Long reservationId;
     private CampingZone Campsite; // 캠핑장 객체
     private String checkInDate;
     private String checkOutDate;
     private Integer adults;
     private Integer children;
     private String selectedSiteName; //  캠핑존 이름
+    private Double latitude;  // (위도)
+    private Double longitude; // (경도)
+
 }

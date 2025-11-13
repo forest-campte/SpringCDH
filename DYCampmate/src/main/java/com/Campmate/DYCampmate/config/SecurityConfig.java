@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -31,6 +32,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        SecurityContextHolder.setStrategyName(SecurityContextHolder.MODE_INHERITABLETHREADLOCAL);
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
@@ -71,7 +73,8 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.POST, "/api/reservations/make").authenticated()
                                 .requestMatchers(HttpMethod.GET, "/api/reservations/customer/**").authenticated()
                                 .requestMatchers(HttpMethod.PUT, "/api/reservations/*/cancel").authenticated()
-
+//                                .requestMatchers("/customer/forecast").authenticated()
+                                .requestMatchers("/customer/forecast").permitAll()
                                 // 6. 위에서 명시한 외의 모든 요청은 인증을 받도록 변경 (보안 강화)
                                 .anyRequest().authenticated()
 //                        .anyRequest().permitAll()
@@ -86,7 +89,10 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+        configuration.setAllowedOrigins(List.of(
+                "http://localhost:3000",
+                "http://10.0.2.2:8080"
+        ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
