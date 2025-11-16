@@ -36,6 +36,8 @@ public class CustomerService {
                 .password(passwordEncoder.encode(dto.getPassword())) // 암호화
                 .email(dto.getEmail())
                 .nickname(dto.getNickname())
+                // 25.11.16 KM 추가: 전화번호 저장 로직
+                .customersPhone(dto.getCustomersPhone())
                 .customersStyle(dto.getCustomersStyle())
                 .customersBackground(dto.getCustomersBackground())
                 .customersType(dto.getCustomersType())

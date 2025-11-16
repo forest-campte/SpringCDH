@@ -23,6 +23,13 @@ interface ApiService {
     @GET("api/zones/{id}")
     suspend fun getCampsiteDetail(@Path("id") campsiteId: Long): Response<Campsite>
 
+    //25.11.14 KM 수정
+    @GET("api/zones/search")
+    suspend fun searchCampsites(
+        @Query("keyword") keyword: String,
+        @Query("region") region: String?
+    ): Response<List<Campsite>>
+
     //11.10 수정 KM
     // --- 리뷰 ---
     @POST("reviews/submit") // 수정: cdh1028

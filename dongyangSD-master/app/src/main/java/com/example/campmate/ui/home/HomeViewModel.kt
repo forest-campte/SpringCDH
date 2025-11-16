@@ -39,13 +39,13 @@ class HomeViewModel @Inject constructor(
     // 🚨 중요: R.drawable.logo 부분을 실제 아이콘 리소스로 교체해야 합니다.
     val themes: List<CampingTheme> = listOf(
         CampingTheme("오토캠핑", R.drawable.logo),
-        CampingTheme("백패킹", R.drawable.logo),
-        CampingTheme("가족캠핑", R.drawable.logo),
+        //CampingTheme("백패킹", R.drawable.logo),
+        //CampingTheme("가족캠핑", R.drawable.logo),
         CampingTheme("반려견캠핑", R.drawable.logo),
         CampingTheme("산속", R.drawable.logo),
         CampingTheme("바다", R.drawable.logo),
-        CampingTheme("호수", R.drawable.logo),
-        CampingTheme("프리미엄", R.drawable.logo),
+        //CampingTheme("호수", R.drawable.logo),
+        //CampingTheme("프리미엄", R.drawable.logo),
 
         )
 

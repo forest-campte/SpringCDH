@@ -45,4 +45,14 @@ public interface AdminRepo extends JpaRepository<AdminEntity, Long> {
             "ORDER BY a.name")
     List<ZoneHomeViewDTO> findAllAsCampsiteList();
 
+    // 25.11.14 KM 추가: 캠핑장 검색 쿼리 (Service에서 호출됨)
+    @Query("SELECT a FROM AdminEntity a " +
+            // 키워드가 null이 아니면 name 또는 address에 키워드가 포함되는지 확인
+            "WHERE (:keyword IS NULL OR :keyword = '' OR a.name LIKE %:keyword% OR a.address LIKE %:keyword%) " +
+            // 지역이 null이 아니면 address가 해당 지역으로 시작하는지 확인
+            "AND (:region IS NULL OR :region = '' OR a.address LIKE CONCAT(:region, '%'))")
+    List<AdminEntity> searchAdminsByKeywordAndRegion(
+            @Param("keyword") String keyword,
+            @Param("region") String region
+    );
 }

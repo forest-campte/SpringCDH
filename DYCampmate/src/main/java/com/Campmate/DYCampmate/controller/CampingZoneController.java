@@ -56,6 +56,15 @@ public class CampingZoneController {
         return ResponseEntity.ok(reviews);
     }
 
+    // 25.11.14 KM 추가: 캠핑장 검색 API
+    @GetMapping("/search")
+    public ResponseEntity<List<CampsiteDetailDTO>> searchCampsites(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String region
+    ) {
+        List<CampsiteDetailDTO> results = campingZoneService.searchCampsites(keyword, region);
+        return ResponseEntity.ok(results);
+    }
 
     @GetMapping("/all")
     public ResponseEntity<List<CampingZoneDto>> getAllZones() { // 반환 타입을 CampingZoneDto로 수정

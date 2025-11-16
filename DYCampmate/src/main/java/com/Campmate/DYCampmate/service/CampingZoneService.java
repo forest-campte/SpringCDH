@@ -269,6 +269,24 @@ public class CampingZoneService {
         campingZoneRepository.delete(campingZone);
     }
 
+
+    // 25.11.14 KM 추가: 캠핑장 검색 로직 구현
+    @Transactional(readOnly = true)
+    public List<CampsiteDetailDTO> searchCampsites(String keyword, String region) {
+        // 1. AdminRepo에 구현된 검색 메소드를 호출하여 Admin(캠핑장) 리스트를 가져옵니다.
+        List<AdminEntity> admins = adminRepository.searchAdminsByKeywordAndRegion(keyword, region);
+
+        // 2. 검색된 Admin 리스트를 앱 프론트엔드 형식인 CampsiteDetailDTO로 변환합니다.
+        return admins.stream()
+                .map(admin -> {
+                    // 각 Admin에 속한 Zones 목록을 조회하여 DTO 변환 시 사용
+                    List<CampingZone> zones = campingZoneRepository.findByAdmin_Id(admin.getId());
+                    return CampsiteDetailDTO.fromEntity(admin, zones);
+                })
+                .collect(Collectors.toList());
+    }
+
+
 }
 
 

@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells // (추가)
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid // (추가)
 import androidx.compose.foundation.lazy.grid.items // (추가)
@@ -109,12 +110,12 @@ fun ThemeIconGrid(
     selectedTheme: String?,
     onThemeSelected: (String) -> Unit
 ) {
-    LazyHorizontalGrid(
-        rows = GridCells.Fixed(2), // 2줄 고정
+    //25.11.14 KM 수정
+    LazyRow (
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp), // 아이템간 가로 간격
-        verticalArrangement = Arrangement.spacedBy(8.dp),   // 아이템간 세로 간격
-        modifier = Modifier.height(200.dp) // 그리드의 전체 높이 (2줄 + 간격)
+        horizontalArrangement = Arrangement.spacedBy(12.dp), // 아이템 간 가로 간격
+        // 높이 제한을 해제하고 콘텐츠 크기에 맞춥니다 (Modifier.height(200.dp) 제거)
+        modifier = Modifier.fillMaxWidth()
     ) {
         items(themes) { theme ->
             ThemeIconItem(
@@ -140,7 +141,7 @@ fun ThemeIconItem(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
             .clickable(onClick = onClick)
-            .width(80.dp) // 아이템 가로 크기
+            .width(85.dp)
     ) {
         // 아이콘을 담는 둥근 배경
         Surface(

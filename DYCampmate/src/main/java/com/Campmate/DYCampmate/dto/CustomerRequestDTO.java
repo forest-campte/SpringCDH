@@ -17,10 +17,14 @@ public class CustomerRequestDTO {
     private String password;
     private String email;
     private String nickname;
+
+    // 25.11.16 KM 추가: 전화번호 필드
+    private String customersPhone;
     private String customersStyle;
     private String customersBackground;
     private String customersType;
     private LocalDateTime createDt;
     private String provider;
+
 
 }

@@ -31,6 +31,9 @@ public class CustomerEntity {
     @Column(name = "customers_name", length = 100)
     private String nickname;
 
+    @Column(name = "customers_phone", length = 20)
+    private String customersPhone; // 25.11.16 KM 수정
+
     //캠핑 스타일
     @Column(name = "customers_style", length = 100)
     private String customersStyle;
